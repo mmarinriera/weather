@@ -11,7 +11,7 @@ from rich.text import Text
 from waf import get_resource
 from waf import get_version
 
-DATE_OUT_FMT_DAILY = "%d/%m/%Y"
+DATE_OUT_FMT_DAILY = "%a %d %b %H:%M"
 logger = logging.getLogger(__name__)
 COLOR_PALETTE = [
     "deep_sky_blue2",
@@ -25,12 +25,13 @@ COLOR_PALETTE = [
     "aquamarine1",
 ]
 
+def _to_celsius(temp:float)->float:
+    return temp -273.15
 
 def _get_weather_data() -> dict[str, Any]:
-    test_file = get_resource("test_response.json")
+    test_file = get_resource("example_3h_5d_forecast.json")
     with open(test_file) as f:
         data = json.load(f)
-    logger.debug(json.dumps(data, indent=4))
     return data
 
 
@@ -38,21 +39,24 @@ def _pretty_print_daily_forecast(location: str, data: dict[str, Any]) -> None:
 
     table = Table(title=f"Daily forecast for {location}", title_justify="left")
     table.add_column("Date", justify="right")
-    table.add_column("Temperature", justify="right")
+    table.add_column("Temp.", justify="right")
     table.add_column("Feels like", justify="right")
+    table.add_column("Precipitation (%)", justify="right")
     table.add_column("Weather", justify="right")
 
-    for entry in data["data"]:
+    for entry in data["list"]:
         date_str = datetime.fromtimestamp(int(entry["dt"])).strftime(DATE_OUT_FMT_DAILY)
         date = Text(date_str, style=COLOR_PALETTE[2])
-        temp = Text(f"{entry['temp']}", style=COLOR_PALETTE[3])
-        feeling = Text(f"{entry['feels_like']}", style=COLOR_PALETTE[3])
+        temp = Text(f"{_to_celsius(entry["main"]["temp"]):.2f}", style=COLOR_PALETTE[3])
+        feeling = Text(f"{_to_celsius(entry["main"]["feels_like"]):.2f}", style=COLOR_PALETTE[3])
+        pop = Text(f"{100*entry['pop']:.2f}%", style=COLOR_PALETTE[0])
         description = Text(f"{entry['weather'][0]['main']}", style=COLOR_PALETTE[5])
 
         table.add_row(
             date,
             temp,
             feeling,
+            pop,
             description,
         )
 
@@ -99,7 +103,7 @@ def weather(ctx: click.Context, debug_mode: bool) -> None:
 @weather.command
 @click.argument("location", type=str)
 @click.argument("days", type=int)
-def daily(location: str, days: int) -> None:
+def forecast(location: str, days: int) -> None:
     """
     Show daily weather forecast for LOCATION for the current day and DAYS following days.
     """

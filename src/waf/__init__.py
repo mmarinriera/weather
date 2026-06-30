@@ -1,0 +1,35 @@
+"""WAF - Weather forecast app"""
+
+import logging
+from pathlib import Path
+
+VERSION = "0.0.0"
+LOG_FORMAT = "%(asctime)s | [%(name)s] %(levelname)s - %(message)s"
+
+
+def get_version() -> str:
+    return VERSION
+
+
+def get_resource(file_name: str) -> Path:
+    """Returns file path from application resource file"""
+    return Path(__file__).parent.parent / "resources" / file_name
+
+
+def _init_logging() -> None:
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    logger.addHandler(handler)
+
+
+def add_file_handler(filename: Path) -> None:
+    """Add FileHandler to existing logger."""
+    logger = logging.getLogger(__name__)
+    handler = logging.FileHandler(filename=filename, mode="w")
+    handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    logger.addHandler(handler)
+
+
+_init_logging()

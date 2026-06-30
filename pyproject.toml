@@ -3,16 +3,18 @@ build-backend = "setuptools.build_meta"
 requires = [ "setuptools>=80", "wheel" ]
 
 [project]
-name = "waf"
+name = "weather"
 version = "0.0.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "click>=8.4.2",
+    "dotenv>=0.9.9",
+    "requests>=2.34.2",
     "rich>=15.0.0",
 ]
-scripts.weather = "waf.scripts.cli:weather"
+scripts.weather = "weather.scripts.cli:weather"
 
 [tool.setuptools]
 packages.find.where = [ "src" ]

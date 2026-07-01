@@ -34,10 +34,6 @@ COLOR_PALETTE = [
 ]
 
 
-def _to_celsius(temp: float) -> float:
-    return temp - 273.15
-
-
 def _load_api_key() -> str:
     env: dict[str, str] = dotenv_values(".env")
     api_key = env.get("OPENWEATHER_API_KEY")
@@ -64,8 +60,8 @@ def _render_entry(entry: dict[str, Any]) -> Table:
 
     date_str = datetime.fromtimestamp(int(entry["dt"])).strftime(DATE_OUT_FMT_DAILY)
     date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
-    temp = Text(f"{_to_celsius(entry['main']['temp']):.2f}º", style=COLOR_PALETTE[3])
-    feeling = Text(f"{_to_celsius(entry['main']['feels_like']):.2f}º", style=COLOR_PALETTE[3])
+    temp = Text(f"{entry['main']['temp']:.1f}º", style=COLOR_PALETTE[3])
+    feeling = Text(f"{entry['main']['feels_like']:.1f}º", style=COLOR_PALETTE[3])
     weather_main = Text(f"{entry['weather'][0]['main']}", style=f"bold {COLOR_PALETTE[5]}")
     description = Text(f"{entry['weather'][0]['description']}", style=f"bold {COLOR_PALETTE[5]}")
     grid.add_row(Padding(date, PAD))

@@ -6,6 +6,7 @@ from typing import Any
 
 import click
 from dotenv import dotenv_values
+from rich.columns import Columns
 from rich.console import Console
 from rich.padding import Padding
 from rich.panel import Panel
@@ -89,9 +90,7 @@ def _render_forecast(city: str, country: str, data: dict[str, Any]) -> None:
     console.rule()
     console.print(Padding(f"[bold]Weather forecast for {city}, {country}", pad=(1, 1)))
     console.rule()
-
-    for entry in data["list"]:
-        console.print(Panel(_render_entry(entry), width=64))
+    console.print(Columns([Panel(_render_entry(entry), width=64) for entry in data["list"]]))
 
 
 def print_version(ctx: click.Context, _: Any, value: Any) -> None:

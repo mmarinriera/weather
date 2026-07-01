@@ -128,8 +128,9 @@ def print_version(ctx: click.Context, _: Any, value: Any) -> None:
     is_flag=True,
     help="Enable debug mode.",
 )
+@click.option("--dev", "dev_mode", is_flag=True, help="Bypass API call and use test data.")
 @click.pass_context
-def weather(ctx: click.Context, debug_mode: bool) -> None:
+def weather(ctx: click.Context, debug_mode: bool, dev_mode: bool) -> None:
     """Weather forecast app"""
     ctx.ensure_object(dict)
 
@@ -137,24 +138,26 @@ def weather(ctx: click.Context, debug_mode: bool) -> None:
         logger.setLevel(level=logging.DEBUG)
 
     ctx.obj["debug"] = debug_mode
+    ctx.obj["dev_mode"] = dev_mode
+
+    if not dev_mode:
+        ctx.obj["api_key"] = _load_api_key()
 
 
 @weather.command
 @click.argument("city", type=str)
 @click.argument("country", type=str)
-@click.option("--dev", "dev_mode", is_flag=True, help="Bypass API call and use test data.")
-def now(city: str, country: str, dev_mode: bool) -> None:
+@click.pass_context
+def now(ctx: click.Context, city: str, country: str) -> None:
     """
     Show current weather for CITY, COUNTRY for the following DAYS.
     """
-    if dev_mode:
+    if ctx.obj["dev_mode"]:
         data = _get_test_data_current()
         _render_current("This is a test", "DEV", data)
         return
 
-    api_key = _load_api_key()
-
-    data = query_current_weather(city, country, api_key=api_key)
+    data = query_current_weather(city, country, api_key=ctx.obj["api_key"])
 
     _render_current(city, country, data)
 
@@ -163,12 +166,12 @@ def now(city: str, country: str, dev_mode: bool) -> None:
 @click.argument("city", type=str)
 @click.argument("country", type=str)
 @click.argument("days", type=int)
-@click.option("--dev", "dev_mode", is_flag=True, help="Bypass API call and use test data.")
-def forecast(city: str, country: str, days: int, dev_mode: bool) -> None:
+@click.pass_context
+def forecast(ctx: click.Context, city: str, country: str, days: int) -> None:
     """
     Show daily weather forecast in 3h intervals for CITY, COUNTRY for the following DAYS.
     """
-    if dev_mode:
+    if ctx.obj["dev_mode"]:
         data = _get_test_data_forecast()
         _render_forecast("This is a test", "DEV", data)
         return

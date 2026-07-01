@@ -38,7 +38,7 @@ COLOR_PALETTE = [
 
 
 def _load_api_key() -> str:
-    env: dict[str, str] = dotenv_values(".env")
+    env: dict[str, str | None] = dotenv_values(".env")
     api_key = env.get("OPENWEATHER_API_KEY")
     if api_key is None:
         logger.critical("API key not found")

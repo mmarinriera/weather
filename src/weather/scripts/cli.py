@@ -1,12 +1,14 @@
 import json
 import logging
-from datetime import datetime
 import sys
+from datetime import datetime
 from typing import Any
 
 import click
 from dotenv import dotenv_values
 from rich.console import Console
+from rich.padding import Padding
+from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
@@ -16,6 +18,7 @@ from weather.weather_api import query_weather_forecast
 
 DATE_OUT_FMT_DAILY = "%a %d %b %H:%M"
 logger = logging.getLogger(__name__)
+console = Console()
 COLOR_PALETTE = [
     "deep_sky_blue2",
     "medium_purple1",
@@ -34,7 +37,7 @@ def _to_celsius(temp: float) -> float:
 
 
 def _load_api_key() -> str:
-    env:dict[str,str] = dotenv_values(".env")
+    env: dict[str, str] = dotenv_values(".env")
     api_key = env.get("OPENWEATHER_API_KEY")
     if api_key is None:
         logger.critical("API key not found")
@@ -49,33 +52,35 @@ def _get_test_data() -> dict[str, Any]:
     return data
 
 
-def _pretty_print_daily_forecast(city: str, country: str, data: dict[str, Any]) -> None:
+def _render_entry(entry: dict[str, Any]) -> Table:
+    PAD = (1, 0)
+    grid = Table.grid(expand=True)
+    grid.add_column()
+    grid.add_column()
+    grid.add_column()
+    grid.add_column()
 
-    table = Table(title=f"Daily forecast for {city}, {country}", title_justify="left")
-    table.add_column("Date", justify="right")
-    table.add_column("Temp.", justify="right")
-    table.add_column("Feels like", justify="right")
-    table.add_column("Precipitation (%)", justify="right")
-    table.add_column("Weather", justify="right")
+    date_str = datetime.fromtimestamp(int(entry["dt"])).strftime(DATE_OUT_FMT_DAILY)
+    date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
+    temp = Text(f"{_to_celsius(entry['main']['temp']):.2f}º", style=COLOR_PALETTE[3])
+    feeling = Text(f"{_to_celsius(entry['main']['feels_like']):.2f}º", style=COLOR_PALETTE[3])
+    pop = Text(f"{100 * entry['pop']:.2f}%", style=COLOR_PALETTE[0])
+    weather_main = Text(f"{entry['weather'][0]['main']}", style=f"bold {COLOR_PALETTE[5]}")
+    description = Text(f"{entry['weather'][0]['description']}", style=f"bold {COLOR_PALETTE[5]}")
+    grid.add_row(Padding(date, PAD))
+    grid.add_row(Padding(weather_main, PAD), Padding(description, PAD))
+    grid.add_row("Temperature", temp, "Feels like", feeling)
+    grid.add_row("Precipitation", pop)
+
+    return grid
+
+
+def _pretty_print_forecast(city: str, country: str, data: dict[str, Any]) -> None:
+    console.print(Padding(f"[bold]Weather forecast for {city}, {country}", pad=(1, 1)))
+    console.rule()
 
     for entry in data["list"]:
-        date_str = datetime.fromtimestamp(int(entry["dt"])).strftime(DATE_OUT_FMT_DAILY)
-        date = Text(date_str, style=COLOR_PALETTE[2])
-        temp = Text(f"{_to_celsius(entry['main']['temp']):.2f}", style=COLOR_PALETTE[3])
-        feeling = Text(f"{_to_celsius(entry['main']['feels_like']):.2f}", style=COLOR_PALETTE[3])
-        pop = Text(f"{100 * entry['pop']:.2f}%", style=COLOR_PALETTE[0])
-        description = Text(f"{entry['weather'][0]['main']}", style=COLOR_PALETTE[5])
-
-        table.add_row(
-            date,
-            temp,
-            feeling,
-            pop,
-            description,
-        )
-
-    console = Console()
-    console.print(table)
+        console.print(Panel(_render_entry(entry), width=64))
 
 
 def print_version(ctx: click.Context, _: Any, value: Any) -> None:
@@ -125,11 +130,11 @@ def forecast(city: str, country: str, days: int, dev_mode: bool) -> None:
     """
     if dev_mode:
         data = _get_test_data()
-        _pretty_print_daily_forecast("This is a test", "DEV", data)
+        _pretty_print_forecast("This is a test", "DEV", data)
         return
 
     api_key = _load_api_key()
 
     data = query_weather_forecast(city, country, days=days, api_key=api_key)
 
-    _pretty_print_daily_forecast(city, country, data)
+    _pretty_print_forecast(city, country, data)

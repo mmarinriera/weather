@@ -3,6 +3,7 @@ from typing import Any
 
 import requests
 
+URL_CURRENT = "https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}"
 URL_FORECAST = "http://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&cnt={cnt}&appid={api_key}"
 URL_GEO = "http://api.openweathermap.org/geo/1.0/direct?q={city_name},{country_code}&limit={limit}&appid={api_key}"
 logger = logging.getLogger(__name__)
@@ -16,6 +17,13 @@ def _get_location_coordinates(city_name: str, country_code: str, api_key: str) -
     logger.debug(f"{city_name},{country_code}: lat = {lat}, long = {lon}")
 
     return lat, lon
+
+
+def query_current_weather(city: str, country: str, api_key: str) -> dict[str, Any]:
+    lat, lon = _get_location_coordinates(city, country, api_key=api_key)
+    res = requests.get(url=URL_CURRENT.format(lat=lat, lon=lon, api_key=api_key))
+    data = res.json()
+    return data
 
 
 def query_weather_forecast(city: str, country: str, days: int, api_key: str) -> dict[str, Any]:

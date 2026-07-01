@@ -14,6 +14,7 @@ from rich.text import Text
 
 from weather import get_resource
 from weather import get_version
+from weather.weather_api import query_current_weather
 from weather.weather_api import query_weather_forecast
 
 DATE_OUT_FMT_DAILY = "%a %d %b %H:%M"
@@ -64,18 +65,28 @@ def _render_entry(entry: dict[str, Any]) -> Table:
     date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
     temp = Text(f"{_to_celsius(entry['main']['temp']):.2f}º", style=COLOR_PALETTE[3])
     feeling = Text(f"{_to_celsius(entry['main']['feels_like']):.2f}º", style=COLOR_PALETTE[3])
-    pop = Text(f"{100 * entry['pop']:.2f}%", style=COLOR_PALETTE[0])
     weather_main = Text(f"{entry['weather'][0]['main']}", style=f"bold {COLOR_PALETTE[5]}")
     description = Text(f"{entry['weather'][0]['description']}", style=f"bold {COLOR_PALETTE[5]}")
     grid.add_row(Padding(date, PAD))
     grid.add_row(Padding(weather_main, PAD), Padding(description, PAD))
     grid.add_row("Temperature", temp, "Feels like", feeling)
-    grid.add_row("Precipitation", pop)
+
+    if entry.get("pop") is not None:
+        pop = Text(f"{100 * entry['pop']:.2f}%", style=COLOR_PALETTE[0])
+        grid.add_row("Precipitation", pop)
 
     return grid
 
 
-def _pretty_print_forecast(city: str, country: str, data: dict[str, Any]) -> None:
+def _render_current(city: str, country: str, data: dict[str, Any]) -> None:
+    console.rule()
+    console.print(Padding(f"[bold]Current Weather in {city}, {country}", pad=(1, 1)))
+    console.rule()
+    console.print(Panel(_render_entry(data), width=64))
+
+
+def _render_forecast(city: str, country: str, data: dict[str, Any]) -> None:
+    console.rule()
     console.print(Padding(f"[bold]Weather forecast for {city}, {country}", pad=(1, 1)))
     console.rule()
 
@@ -122,6 +133,26 @@ def weather(ctx: click.Context, debug_mode: bool) -> None:
 @weather.command
 @click.argument("city", type=str)
 @click.argument("country", type=str)
+@click.option("--dev", "dev_mode", is_flag=True, help="Bypass API call and use test data.")
+def now(city: str, country: str, dev_mode: bool) -> None:
+    """
+    Show current weather for CITY, COUNTRY for the following DAYS.
+    """
+    if dev_mode:
+        data = _get_test_data()
+        _render_current("This is a test", "DEV", data)
+        return
+
+    api_key = _load_api_key()
+
+    data = query_current_weather(city, country, api_key=api_key)
+
+    _render_current(city, country, data)
+
+
+@weather.command
+@click.argument("city", type=str)
+@click.argument("country", type=str)
 @click.argument("days", type=int)
 @click.option("--dev", "dev_mode", is_flag=True, help="Bypass API call and use test data.")
 def forecast(city: str, country: str, days: int, dev_mode: bool) -> None:
@@ -130,11 +161,11 @@ def forecast(city: str, country: str, days: int, dev_mode: bool) -> None:
     """
     if dev_mode:
         data = _get_test_data()
-        _pretty_print_forecast("This is a test", "DEV", data)
+        _render_forecast("This is a test", "DEV", data)
         return
 
     api_key = _load_api_key()
 
     data = query_weather_forecast(city, country, days=days, api_key=api_key)
 
-    _pretty_print_forecast(city, country, data)
+    _render_forecast(city, country, data)

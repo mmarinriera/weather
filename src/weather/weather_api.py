@@ -22,7 +22,7 @@ def _get_location_coordinates(city_name: str, country_code: str, api_key: str) -
 def query_current_weather(city: str, country: str, api_key: str) -> dict[str, Any]:
     lat, lon = _get_location_coordinates(city, country, api_key=api_key)
     res = requests.get(url=URL_CURRENT.format(lat=lat, lon=lon, api_key=api_key))
-    data = res.json()
+    data: dict[str, Any] = res.json()
     return data
 
 
@@ -30,5 +30,5 @@ def query_weather_forecast(city: str, country: str, days: int, api_key: str) -> 
     cnt = days * 8
     lat, lon = _get_location_coordinates(city, country, api_key=api_key)
     res = requests.get(url=URL_FORECAST.format(lat=lat, lon=lon, cnt=cnt, api_key=api_key))
-    data = res.json()
+    data: dict[str, Any] = res.json()
     return data

@@ -50,7 +50,7 @@ def _load_api_key() -> str:
 def _get_test_data() -> dict[str, Any]:
     test_file = get_resource("example_3h_5d_forecast.json")
     with open(test_file) as f:
-        data = json.load(f)
+        data: dict[str, Any] = json.load(f)
     return data
 
 

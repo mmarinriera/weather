@@ -1,7 +1,9 @@
 import logging
-from typing import Any
 
 import requests
+from pydantic import AliasChoices
+from pydantic import BaseModel
+from pydantic import Field
 
 URL_CURRENT = "https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric"
 URL_FORECAST = (
@@ -9,6 +11,75 @@ URL_FORECAST = (
 )
 URL_GEO = "http://api.openweathermap.org/geo/1.0/direct?q={city_name},{country_code}&limit={limit}&appid={api_key}"
 logger = logging.getLogger(__name__)
+
+
+class LocationData(BaseModel):
+    name: str
+    country: str
+    timezone: int
+    sunrise: int
+    sunset: int
+
+
+class WeatherMainData(BaseModel):
+    temp: float
+    feels_like: float
+    temp_min: float
+    temp_max: float
+    pressure: float = Field(alias="grnd_level")
+    humidity: float
+
+
+class WeatherDescription(BaseModel):
+    id: int
+    main: str
+    description: str
+
+
+class CloudsData(BaseModel):
+    all: float
+
+
+class WindData(BaseModel):
+    speed: float
+    deg: float
+    gust: float
+
+
+class RainData(BaseModel):
+    volume: float = Field(alias=AliasChoices("3h", "1h"), default=0.0)
+
+
+class SnowData(BaseModel):
+    volume: float = Field(alias=AliasChoices("3h", "1h"), default=0.0)
+
+
+class ForecastEntry(BaseModel):
+    dt: int
+    main: WeatherMainData
+    weather: list[WeatherDescription]
+    clouds: CloudsData
+    wind: WindData
+    rain: RainData = RainData()
+    snow: SnowData = SnowData()
+    pop: float
+
+
+class OpenWeatherCurrent(BaseModel):
+    dt: int
+    main: WeatherMainData
+    weather: list[WeatherDescription]
+    clouds: CloudsData
+    wind: WindData
+    rain: RainData = RainData()
+    snow: SnowData = SnowData()
+    timezone: int
+
+
+class OpenWeatherForecast(BaseModel):
+    cnt: int
+    forecast: list[ForecastEntry] = Field(alias="list")
+    city: LocationData
 
 
 def _get_location_coordinates(city_name: str, country_code: str, api_key: str) -> tuple[float, float]:
@@ -21,16 +92,16 @@ def _get_location_coordinates(city_name: str, country_code: str, api_key: str) -
     return lat, lon
 
 
-def query_current_weather(city: str, country: str, api_key: str) -> dict[str, Any]:
+def query_current_weather(city: str, country: str, api_key: str) -> OpenWeatherCurrent:
     lat, lon = _get_location_coordinates(city, country, api_key=api_key)
     res = requests.get(url=URL_CURRENT.format(lat=lat, lon=lon, api_key=api_key))
-    data: dict[str, Any] = res.json()
+    data: OpenWeatherCurrent = OpenWeatherCurrent.model_validate(res.json())
     return data
 
 
-def query_weather_forecast(city: str, country: str, days: int, api_key: str) -> dict[str, Any]:
+def query_weather_forecast(city: str, country: str, days: int, api_key: str) -> OpenWeatherForecast:
     cnt = days * 8
     lat, lon = _get_location_coordinates(city, country, api_key=api_key)
     res = requests.get(url=URL_FORECAST.format(lat=lat, lon=lon, cnt=cnt, api_key=api_key))
-    data: dict[str, Any] = res.json()
+    data: OpenWeatherForecast = OpenWeatherForecast.model_validate(res.json())
     return data

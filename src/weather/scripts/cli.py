@@ -15,6 +15,9 @@ from rich.text import Text
 
 from weather import get_resource
 from weather import get_version
+from weather.weather_api import ForecastEntry
+from weather.weather_api import OpenWeatherCurrent
+from weather.weather_api import OpenWeatherForecast
 from weather.weather_api import query_current_weather
 from weather.weather_api import query_weather_forecast
 
@@ -43,14 +46,21 @@ def _load_api_key() -> str:
     return api_key
 
 
-def _get_test_data() -> dict[str, Any]:
-    test_file = get_resource("example_3h_5d_forecast.json")
+def _get_test_data_current() -> OpenWeatherCurrent:
+    test_file = get_resource("example_current_weather.json")
     with open(test_file) as f:
-        data: dict[str, Any] = json.load(f)
+        data: OpenWeatherCurrent = OpenWeatherCurrent.model_validate(json.load(f))
     return data
 
 
-def _render_entry(entry: dict[str, Any]) -> Table:
+def _get_test_data_forecast() -> OpenWeatherForecast:
+    test_file = get_resource("example_3h_5d_forecast.json")
+    with open(test_file) as f:
+        data: OpenWeatherForecast = OpenWeatherForecast.model_validate(json.load(f))
+    return data
+
+
+def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
     PAD = (1, 0)
     grid = Table.grid(expand=True)
     grid.add_column()
@@ -58,35 +68,39 @@ def _render_entry(entry: dict[str, Any]) -> Table:
     grid.add_column()
     grid.add_column()
 
-    date_str = datetime.fromtimestamp(int(entry["dt"])).strftime(DATE_OUT_FMT_DAILY)
+    date_str = datetime.fromtimestamp(entry.dt).strftime(DATE_OUT_FMT_DAILY)
     date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
-    temp = Text(f"{entry['main']['temp']:.1f}º", style=COLOR_PALETTE[3])
-    feeling = Text(f"{entry['main']['feels_like']:.1f}º", style=COLOR_PALETTE[3])
-    weather_main = Text(f"{entry['weather'][0]['main']}", style=f"bold {COLOR_PALETTE[5]}")
-    description = Text(f"{entry['weather'][0]['description']}", style=f"bold {COLOR_PALETTE[5]}")
+    temp = Text(f"{entry.main.temp:.1f}º", style=COLOR_PALETTE[3])
+    feeling = Text(f"{entry.main.feels_like:.1f}º", style=COLOR_PALETTE[3])
+    weather_main = Text(f"{entry.weather[0].main}", style=f"bold {COLOR_PALETTE[5]}")
+    description = Text(f"{entry.weather[0].description}", style=f"bold {COLOR_PALETTE[5]}")
     grid.add_row(Padding(date, PAD))
     grid.add_row(Padding(weather_main, PAD), Padding(description, PAD))
     grid.add_row("Temperature", temp, "Feels like", feeling)
 
-    if entry.get("pop") is not None:
-        pop = Text(f"{100 * entry['pop']:.2f}%", style=COLOR_PALETTE[0])
-        grid.add_row("Precipitation", pop)
+    vol = Text(f"{100 * entry.rain.volume:.2f}mm", style=COLOR_PALETTE[0])
+
+    if isinstance(entry, OpenWeatherCurrent):
+        grid.add_row("Precipitation", vol)
+    else:
+        pop = Text(f"{100 * entry.pop:.2f}%", style=COLOR_PALETTE[0])
+        grid.add_row("Precipitation", pop, vol)
 
     return grid
 
 
-def _render_current(city: str, country: str, data: dict[str, Any]) -> None:
+def _render_current(city: str, country: str, data: OpenWeatherCurrent) -> None:
     console.rule()
     console.print(Padding(f"[bold]Current Weather in {city}, {country}", pad=(1, 1)))
     console.rule()
     console.print(Panel(_render_entry(data), width=64))
 
 
-def _render_forecast(city: str, country: str, data: dict[str, Any]) -> None:
+def _render_forecast(city: str, country: str, data: OpenWeatherForecast) -> None:
     console.rule()
     console.print(Padding(f"[bold]Weather forecast for {city}, {country}", pad=(1, 1)))
     console.rule()
-    console.print(Columns([Panel(_render_entry(entry), width=64) for entry in data["list"]]))
+    console.print(Columns([Panel(_render_entry(entry), width=64) for entry in data.forecast]))
 
 
 def print_version(ctx: click.Context, _: Any, value: Any) -> None:
@@ -134,7 +148,7 @@ def now(city: str, country: str, dev_mode: bool) -> None:
     Show current weather for CITY, COUNTRY for the following DAYS.
     """
     if dev_mode:
-        data = _get_test_data()
+        data = _get_test_data_current()
         _render_current("This is a test", "DEV", data)
         return
 
@@ -155,7 +169,7 @@ def forecast(city: str, country: str, days: int, dev_mode: bool) -> None:
     Show daily weather forecast in 3h intervals for CITY, COUNTRY for the following DAYS.
     """
     if dev_mode:
-        data = _get_test_data()
+        data = _get_test_data_forecast()
         _render_forecast("This is a test", "DEV", data)
         return
 

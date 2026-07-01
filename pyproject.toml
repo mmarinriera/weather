@@ -17,6 +17,7 @@ classifiers = [
 dependencies = [
   "click>=8.4.2",
   "dotenv>=0.9.9",
+  "pydantic>=2.13.4",
   "requests>=2.34.2",
   "rich>=15",
 ]

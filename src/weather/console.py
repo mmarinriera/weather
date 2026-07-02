@@ -1,3 +1,4 @@
+import itertools
 import logging
 from datetime import datetime
 
@@ -14,7 +15,10 @@ from weather.weather_api import OpenWeatherForecast
 
 console = Console()
 
-DATE_OUT_FMT_DAILY = "%a %d %b %H:%M"
+DATETIME_OUT_FMT = "%a %d %b %H:%M"
+DATE_OUT_FMT = "%a %d %b"
+TIME_OUT_FMT = "%H:%M"
+
 logger = logging.getLogger(__name__)
 COLOR_PALETTE = [
     "deep_sky_blue2",
@@ -37,7 +41,7 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
     grid.add_column()
     grid.add_column()
 
-    date_str = datetime.fromtimestamp(entry.dt).strftime(DATE_OUT_FMT_DAILY)
+    date_str = datetime.fromtimestamp(entry.dt).strftime(TIME_OUT_FMT)
     date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
     temp = Text(f"{entry.main.temp:.1f}º", style=COLOR_PALETTE[3])
     feeling = Text(f"{entry.main.feels_like:.1f}º", style=COLOR_PALETTE[3])
@@ -58,13 +62,26 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
     return grid
 
 
+def _group_entries_by_day(data: OpenWeatherForecast) -> None:
+    # Forecast entries are already sorted by date
+    for date, group in itertools.groupby(data.forecast, key=lambda d: datetime.fromtimestamp(d.dt).date()):
+        console.rule(title=f"[bold] {date.strftime(DATE_OUT_FMT)}", align="left")
+        console.print(
+            Padding(
+                Columns([Panel(_render_entry(entry), width=64) for entry in group]),
+                pad=(1, 0, 1, 0),
+            ),
+        )
+
+
 def render_current(city: str, country: str, data: OpenWeatherCurrent) -> None:
-    title = f"[bold]Current Weather in {city}, {country}"
-    console.rule(title=title)
+    date = datetime.fromtimestamp(data.dt).strftime(DATE_OUT_FMT)
+    title = f"[bold]Current Weather in {city}, {country}, {date}"
+    console.print(Padding(Panel(title), pad=(1, 0, 1, 0)))
     console.print(Panel(_render_entry(data), width=64))
 
 
 def render_forecast(city: str, country: str, data: OpenWeatherForecast) -> None:
     title = f"[bold]Weather forecast for {city}, {country}"
-    console.rule(title=title)
-    console.print(Columns([Panel(_render_entry(entry), width=64) for entry in data.forecast]))
+    console.print(Padding(Panel(title), pad=(1, 0, 1, 0)))
+    _group_entries_by_day(data)

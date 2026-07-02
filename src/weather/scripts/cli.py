@@ -1,40 +1,20 @@
 import json
 import logging
 import sys
-from datetime import datetime
 from typing import Any
 
 import click
 from dotenv import dotenv_values
-from rich.columns import Columns
-from rich.console import Console
-from rich.padding import Padding
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
 
+from weather import console
 from weather import get_resource
 from weather import get_version
-from weather.weather_api import ForecastEntry
 from weather.weather_api import OpenWeatherCurrent
 from weather.weather_api import OpenWeatherForecast
 from weather.weather_api import query_current_weather
 from weather.weather_api import query_weather_forecast
 
-DATE_OUT_FMT_DAILY = "%a %d %b %H:%M"
 logger = logging.getLogger(__name__)
-console = Console()
-COLOR_PALETTE = [
-    "deep_sky_blue2",
-    "medium_purple1",
-    "yellow",
-    "orange_red1",
-    "dark_cyan",
-    "deep_pink3",
-    "wheat1",
-    "thistle1",
-    "aquamarine1",
-]
 
 
 def _load_api_key() -> str:
@@ -58,49 +38,6 @@ def _get_test_data_forecast() -> OpenWeatherForecast:
     with open(test_file) as f:
         data: OpenWeatherForecast = OpenWeatherForecast.model_validate(json.load(f))
     return data
-
-
-def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
-    PAD = (1, 0)
-    grid = Table.grid(expand=True)
-    grid.add_column()
-    grid.add_column()
-    grid.add_column()
-    grid.add_column()
-
-    date_str = datetime.fromtimestamp(entry.dt).strftime(DATE_OUT_FMT_DAILY)
-    date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
-    temp = Text(f"{entry.main.temp:.1f}º", style=COLOR_PALETTE[3])
-    feeling = Text(f"{entry.main.feels_like:.1f}º", style=COLOR_PALETTE[3])
-    weather_main = Text(f"{entry.weather[0].main}", style=f"bold {COLOR_PALETTE[5]}")
-    description = Text(f"{entry.weather[0].description}", style=f"bold {COLOR_PALETTE[5]}")
-    grid.add_row(Padding(date, PAD))
-    grid.add_row(Padding(weather_main, PAD), Padding(description, PAD))
-    grid.add_row("Temperature", temp, "Feels like", feeling)
-
-    vol = Text(f"{100 * entry.rain.volume:.2f}mm", style=COLOR_PALETTE[0])
-
-    if isinstance(entry, OpenWeatherCurrent):
-        grid.add_row("Precipitation", vol)
-    else:
-        pop = Text(f"{100 * entry.pop:.2f}%", style=COLOR_PALETTE[0])
-        grid.add_row("Precipitation", pop, vol)
-
-    return grid
-
-
-def _render_current(city: str, country: str, data: OpenWeatherCurrent) -> None:
-    console.rule()
-    console.print(Padding(f"[bold]Current Weather in {city}, {country}", pad=(1, 1)))
-    console.rule()
-    console.print(Panel(_render_entry(data), width=64))
-
-
-def _render_forecast(city: str, country: str, data: OpenWeatherForecast) -> None:
-    console.rule()
-    console.print(Padding(f"[bold]Weather forecast for {city}, {country}", pad=(1, 1)))
-    console.rule()
-    console.print(Columns([Panel(_render_entry(entry), width=64) for entry in data.forecast]))
 
 
 def print_version(ctx: click.Context, _: Any, value: Any) -> None:
@@ -154,12 +91,11 @@ def now(ctx: click.Context, city: str, country: str) -> None:
     """
     if ctx.obj["dev_mode"]:
         data = _get_test_data_current()
-        _render_current("This is a test", "DEV", data)
+        console.render_current("This is a test", "DEV", data)
         return
 
     data = query_current_weather(city, country, api_key=ctx.obj["api_key"])
-
-    _render_current(city, country, data)
+    console.render_current(city, country, data)
 
 
 @weather.command
@@ -173,11 +109,10 @@ def forecast(ctx: click.Context, city: str, country: str, days: int) -> None:
     """
     if ctx.obj["dev_mode"]:
         data = _get_test_data_forecast()
-        _render_forecast("This is a test", "DEV", data)
+        console.render_forecast("This is a test", "DEV", data)
         return
 
     api_key = _load_api_key()
 
     data = query_weather_forecast(city, country, days=days, api_key=api_key)
-
-    _render_forecast(city, country, data)
+    console.render_forecast(city, country, data)

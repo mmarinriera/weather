@@ -1,9 +1,8 @@
 import json
 import logging
-import sys
-from typing import Any
+from typing import Annotated
 
-import click
+import typer
 from dotenv import dotenv_values
 
 from weather import console
@@ -14,6 +13,8 @@ from weather.weather_api import OpenWeatherForecast
 from weather.weather_api import query_current_weather
 from weather.weather_api import query_weather_forecast
 
+weather = typer.Typer()
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +23,7 @@ def _load_api_key() -> str:
     api_key = env.get("OPENWEATHER_API_KEY")
     if api_key is None:
         logger.critical("API key not found")
-        sys.exit(1)
+        raise typer.Exit(1)
     return api_key
 
 
@@ -40,34 +41,21 @@ def _get_test_data_forecast() -> OpenWeatherForecast:
     return data
 
 
-def print_version(ctx: click.Context, _: Any, value: Any) -> None:
-    """Click print version."""
-    if not value or ctx.resilient_parsing:
-        return
-    click.echo(get_version())
-    ctx.exit()
+def version_callback(value: bool) -> None:
+    if value:
+        print(get_version())
+        raise typer.Exit()
 
 
-@click.group(context_settings=dict(help_option_names=["-h", "--help"]))
-@click.option(
-    "-v",
-    "--version",
-    is_flag=True,
-    help="Print version and exit.",
-    callback=print_version,
-    expose_value=False,
-    is_eager=True,
-)
-@click.option(
-    "-d",
-    "--debug",
-    "debug_mode",
-    is_flag=True,
-    help="Enable debug mode.",
-)
-@click.option("--dev", "dev_mode", is_flag=True, help="Bypass API call and use test data.")
-@click.pass_context
-def weather(ctx: click.Context, debug_mode: bool, dev_mode: bool) -> None:
+@weather.callback()
+def cli_callback(
+    ctx: typer.Context,
+    version: Annotated[
+        bool, typer.Option("-v", "--version", callback=version_callback, is_eager=True, help="Show version and exit.")
+    ] = False,
+    debug_mode: Annotated[bool, typer.Option("-d", "--debug", help="Enable DEBUG logging.")] = False,
+    dev_mode: Annotated[bool, typer.Option("--dev", help="Avoids using API and instead loads test data.")] = False,
+) -> None:
     """Weather forecast app"""
     ctx.ensure_object(dict)
 
@@ -81,11 +69,8 @@ def weather(ctx: click.Context, debug_mode: bool, dev_mode: bool) -> None:
         ctx.obj["api_key"] = _load_api_key()
 
 
-@weather.command
-@click.argument("city", type=str)
-@click.argument("country", type=str)
-@click.pass_context
-def now(ctx: click.Context, city: str, country: str) -> None:
+@weather.command()
+def now(ctx: typer.Context, city: str, country: str) -> None:
     """
     Show current weather for CITY, COUNTRY for the following DAYS.
     """
@@ -98,12 +83,8 @@ def now(ctx: click.Context, city: str, country: str) -> None:
     console.render_current(city, country, data)
 
 
-@weather.command
-@click.argument("city", type=str)
-@click.argument("country", type=str)
-@click.argument("days", type=int)
-@click.pass_context
-def forecast(ctx: click.Context, city: str, country: str, days: int) -> None:
+@weather.command()
+def forecast(ctx: typer.Context, city: str, country: str, days: Annotated[int, typer.Argument()] = 1) -> None:
     """
     Show daily weather forecast in 3h intervals for CITY, COUNTRY for the following DAYS.
     """
@@ -112,7 +93,5 @@ def forecast(ctx: click.Context, city: str, country: str, days: int) -> None:
         console.render_forecast("This is a test", "DEV", data)
         return
 
-    api_key = _load_api_key()
-
-    data = query_weather_forecast(city, country, days=days, api_key=api_key)
+    data = query_weather_forecast(city, country, days=days, api_key=ctx.obj["api_key"])
     console.render_forecast(city, country, data)

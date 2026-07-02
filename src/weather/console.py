@@ -59,14 +59,12 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
 
 
 def render_current(city: str, country: str, data: OpenWeatherCurrent) -> None:
-    console.rule()
-    console.print(Padding(f"[bold]Current Weather in {city}, {country}", pad=(1, 1)))
-    console.rule()
+    title = f"[bold]Current Weather in {city}, {country}"
+    console.rule(title=title)
     console.print(Panel(_render_entry(data), width=64))
 
 
 def render_forecast(city: str, country: str, data: OpenWeatherForecast) -> None:
-    console.rule()
-    console.print(Padding(f"[bold]Weather forecast for {city}, {country}", pad=(1, 1)))
-    console.rule()
+    title = f"[bold]Weather forecast for {city}, {country}"
+    console.rule(title=title)
     console.print(Columns([Panel(_render_entry(entry), width=64) for entry in data.forecast]))

@@ -105,7 +105,7 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
 def _group_entries_by_day(data: OpenWeatherForecast) -> None:
     # Forecast entries are already sorted by date
     for date, group in itertools.groupby(data.forecast, key=lambda d: datetime.fromtimestamp(d.dt).date()):
-        console.rule(title=f"[bold] {date.strftime(DATE_OUT_FMT)}", align="left")
+        console.rule(title=f"[bold] {date.strftime(DATE_OUT_FMT)}", align="left", style="")
         console.print(
             Padding(
                 Columns([_render_entry(entry) for entry in group]),

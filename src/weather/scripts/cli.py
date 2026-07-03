@@ -72,7 +72,7 @@ def cli_callback(
 @weather.command()
 def now(ctx: typer.Context, city: str, country: str) -> None:
     """
-    Show current weather for CITY, COUNTRY for the following DAYS.
+    Show current weather for CITY, COUNTRY.
     """
     if ctx.obj["dev_mode"]:
         data = _get_test_data_current()

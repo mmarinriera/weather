@@ -75,6 +75,7 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     description = Text(f"{weather_emoji} {entry.weather[0].description}", style=f"bold {weather_color}")
     grid.add_row(Padding(description, (1, 0, 1, 0)))
 
+    temp_color = _get_temp_color(entry.main.temp)
     temp = Text(f"{entry.main.temp:.1f}º", style=_get_temp_color(entry.main.temp))
     feeling = Text(f"{entry.main.feels_like:.1f}º", style=_get_temp_color(entry.main.feels_like))
     grid.add_row("Temperature", temp)
@@ -98,7 +99,7 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     if snow_vol_hourly > 0.0:
         grid.add_row("🌨️ Snow", snow_vol)
 
-    return Panel(grid, width=ENTRY_PANEL_WIDTH, title=time, title_align="left")
+    return Panel(grid, width=ENTRY_PANEL_WIDTH, title=time, title_align="left", border_style=temp_color)
 
 
 def _group_entries_by_day(data: OpenWeatherForecast) -> None:

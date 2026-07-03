@@ -76,8 +76,9 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     grid.add_row(Padding(description, (1, 0, 1, 0)))
 
     temp_color = _get_temp_color(entry.main.temp)
-    temp = Text(f"{entry.main.temp:.1f}º", style=_get_temp_color(entry.main.temp))
-    feeling = Text(f"{entry.main.feels_like:.1f}º", style=_get_temp_color(entry.main.feels_like))
+    feel_color = _get_temp_color(entry.main.feels_like)
+    temp = Text(f"{entry.main.temp:.1f}º", style=temp_color)
+    feeling = Text(f"{entry.main.feels_like:.1f}º", style=feel_color)
     grid.add_row("Temperature", temp)
     grid.add_row("Feels like", feeling)
 

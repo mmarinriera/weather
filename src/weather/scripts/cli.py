@@ -13,6 +13,8 @@ from weather.weather_api import OpenWeatherForecast
 from weather.weather_api import query_current_weather
 from weather.weather_api import query_weather_forecast
 
+MAX_DAYS_FORECAST = 5
+
 weather = typer.Typer()
 
 logger = logging.getLogger(__name__)
@@ -100,6 +102,16 @@ def forecast(
         data = _get_test_data_forecast()
         console.render_forecast("This is a test", "DEV", data)
         return
+
+    if days is None and hours / 24 > MAX_DAYS_FORECAST:
+        logger.warning(
+            f"Maximum forecast is {MAX_DAYS_FORECAST} days. Capping query to {MAX_DAYS_FORECAST} days ({MAX_DAYS_FORECAST * 24}h)."
+        )
+        hours = MAX_DAYS_FORECAST * 24
+
+    if days is not None and days > MAX_DAYS_FORECAST:
+        logger.warning(f"Maximum forecast is {MAX_DAYS_FORECAST} days. Capping query to {MAX_DAYS_FORECAST} days.")
+        days = MAX_DAYS_FORECAST
 
     hours = days * 24 if days is not None else hours
 

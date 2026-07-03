@@ -100,7 +100,7 @@ def query_current_weather(city: str, country: str, api_key: str) -> OpenWeatherC
 
 
 def query_weather_forecast(city: str, country: str, hours: int, api_key: str) -> OpenWeatherForecast:
-    cnt = hours // 3
+    cnt = hours // 3 + 1
     lat, lon = _get_location_coordinates(city, country, api_key=api_key)
     res = requests.get(url=URL_FORECAST.format(lat=lat, lon=lon, cnt=cnt, api_key=api_key))
     data: OpenWeatherForecast = OpenWeatherForecast.model_validate(res.json())

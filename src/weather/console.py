@@ -17,7 +17,7 @@ console = Console()
 
 DATE_OUT_FMT = "%a %d %b"
 TIME_OUT_FMT = "%H:%M"
-
+ENTRY_PANEL_WIDTH = 48
 WEATHER_EMOJIS = {
     "Thunderstorm": "🌩️",
     "Drizzle": "🌧️",
@@ -47,26 +47,29 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
     grid = Table.grid(expand=True)
     grid.add_column()
     grid.add_column()
-    grid.add_column()
-    grid.add_column()
-
-    weather_emoji = WEATHER_EMOJIS.get(entry.weather[0].main, "")
 
     date_str = datetime.fromtimestamp(entry.dt).strftime(TIME_OUT_FMT)
     date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
-    temp = Text(f"{entry.main.temp:.1f}º", style=COLOR_PALETTE[3])
-    feeling = Text(f"{entry.main.feels_like:.1f}º", style=COLOR_PALETTE[3])
+    weather_emoji = WEATHER_EMOJIS.get(entry.weather[0].main, "")
     description = Text(f"{weather_emoji} {entry.weather[0].description}", style=f"bold {COLOR_PALETTE[5]}")
     grid.add_row(Padding(date, PAD), Padding(description, PAD))
-    grid.add_row("Temperature", temp, "Feels like", feeling)
 
-    vol = Text(f"{100 * entry.rain.volume:.2f}mm", style=COLOR_PALETTE[0])
+    temp = Text(f"{entry.main.temp:.1f}º", style=COLOR_PALETTE[3])
+    feeling = Text(f"{entry.main.feels_like:.1f}º", style=COLOR_PALETTE[3])
+    grid.add_row("Temperature", temp)
+    grid.add_row("Feels like", feeling)
 
-    if isinstance(entry, OpenWeatherCurrent):
-        grid.add_row("Precipitation", vol)
-    else:
+    if isinstance(entry, ForecastEntry):
         pop = Text(f"{100 * entry.pop:.2f}%", style=COLOR_PALETTE[0])
-        grid.add_row("Precipitation", pop, vol)
+        grid.add_row("Precipitation", pop)
+
+    rain_vol = Text(f"{100 * entry.rain.volume:.2f}mm", style=COLOR_PALETTE[0])
+    snow_vol = Text(f"{100 * entry.snow.volume:.2f}mm", style=COLOR_PALETTE[0])
+
+    if entry.rain.volume > 0.0:
+        grid.add_row("🌧️ Rain", rain_vol)
+    if entry.snow.volume > 0.0:
+        grid.add_row("🌨️ Snow", snow_vol)
 
     return grid
 
@@ -77,7 +80,7 @@ def _group_entries_by_day(data: OpenWeatherForecast) -> None:
         console.rule(title=f"[bold] {date.strftime(DATE_OUT_FMT)}", align="left")
         console.print(
             Padding(
-                Columns([Panel(_render_entry(entry), width=64) for entry in group]),
+                Columns([Panel(_render_entry(entry), width=ENTRY_PANEL_WIDTH) for entry in group]),
                 pad=(1, 0, 1, 0),
             ),
         )

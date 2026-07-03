@@ -17,7 +17,7 @@ console = Console()
 logger = logging.getLogger(__name__)
 
 DATE_OUT_FMT = "%a %d %b"
-TIME_OUT_FMT = "%H:%M"
+TIME_OUT_FMT = "%H:%Mh"
 ENTRY_PANEL_WIDTH = 32
 WEATHER_EMOJIS = {
     "Thunderstorm": "🌩️",
@@ -70,8 +70,8 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     weather_color = WEATHER_COLORS.get(weather_category, "")
     weather_emoji = WEATHER_EMOJIS.get(weather_category, "")
 
-    date_str = datetime.fromtimestamp(entry.dt).strftime(TIME_OUT_FMT)
-    date = Text(date_str, style="bold")
+    time_str = datetime.fromtimestamp(entry.dt).strftime(TIME_OUT_FMT)
+    time = Text(time_str, style="bold")
     description = Text(f"{weather_emoji} {entry.weather[0].description}", style=f"bold {weather_color}")
     grid.add_row(Padding(description, (1, 0, 1, 0)))
 
@@ -92,7 +92,7 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     if entry.snow.volume > 0.0:
         grid.add_row("🌨️ Snow", snow_vol)
 
-    return Panel(grid, width=ENTRY_PANEL_WIDTH, title=date, title_align="left")
+    return Panel(grid, width=ENTRY_PANEL_WIDTH, title=time, title_align="left")
 
 
 def _group_entries_by_day(data: OpenWeatherForecast) -> None:

@@ -80,16 +80,22 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     grid.add_row("Temperature", temp)
     grid.add_row("Feels like", feeling)
 
+    rain_vol_hourly = entry.rain.volume
+    snow_vol_hourly = entry.snow.volume
+
     if isinstance(entry, ForecastEntry):
         pop = Text(f"{100 * entry.pop:.2f}%", style=WEATHER_COLORS["Rain"])
         grid.add_row("Precipitation", pop)
+        # Forecast rain and snow measures are accumulated for the last 3h
+        rain_vol_hourly /= 3
+        snow_vol_hourly /= 3
 
-    rain_vol = Text(f"{100 * entry.rain.volume:.2f}mm", style=WEATHER_COLORS["Rain"])
-    snow_vol = Text(f"{100 * entry.snow.volume:.2f}mm", style=WEATHER_COLORS["Snow"])
+    rain_vol = Text(f"{100 * rain_vol_hourly:.2f}mm", style=WEATHER_COLORS["Rain"])
+    snow_vol = Text(f"{100 * snow_vol_hourly:.2f}mm", style=WEATHER_COLORS["Snow"])
 
-    if entry.rain.volume > 0.0:
+    if rain_vol_hourly > 0.0:
         grid.add_row("🌧️ Rain", rain_vol)
-    if entry.snow.volume > 0.0:
+    if snow_vol_hourly > 0.0:
         grid.add_row("🌨️ Snow", snow_vol)
 
     return Panel(grid, width=ENTRY_PANEL_WIDTH, title=time, title_align="left")

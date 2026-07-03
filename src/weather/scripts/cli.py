@@ -93,8 +93,8 @@ def cli_callback(
 @weather.command()
 def now(
     ctx: typer.Context,
-    city: str,
-    country: str,
+    city: Annotated[str, typer.Argument(envvar="WEATHER_LOCATION_CITY")],
+    country: Annotated[str, typer.Argument(envvar="WEATHER_LOCATION_COUNTRY")],
     pressure: Annotated[
         bool, typer.Option("--pressure", "-p", envvar="WEATHER_INCLUDE_PRESSURE", help="Include pressure.")
     ] = False,
@@ -122,8 +122,8 @@ def now(
 @weather.command()
 def forecast(
     ctx: typer.Context,
-    city: str,
-    country: str,
+    city: Annotated[str, typer.Argument(envvar="WEATHER_LOCATION_CITY")],
+    country: Annotated[str, typer.Argument(envvar="WEATHER_LOCATION_COUNTRY")],
     period: Annotated[ForecastPeriod, typer.Argument(envvar="WEATHER_FORECAST_PERIOD")] = ForecastPeriod.today,
     days: Annotated[int | None, typer.Option("--days", "-d", help="Forecast period in days.")] = None,
     hours: Annotated[int | None, typer.Option("--hours", "-h", help="Forecast period in hours.")] = None,

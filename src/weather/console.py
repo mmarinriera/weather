@@ -14,6 +14,7 @@ from weather.weather_api import OpenWeatherCurrent
 from weather.weather_api import OpenWeatherForecast
 
 console = Console()
+logger = logging.getLogger(__name__)
 
 DATE_OUT_FMT = "%a %d %b"
 TIME_OUT_FMT = "%H:%M"
@@ -28,50 +29,70 @@ WEATHER_EMOJIS = {
     "801": "⛅️",
 }
 
-logger = logging.getLogger(__name__)
-COLOR_PALETTE = [
-    "deep_sky_blue2",
-    "medium_purple1",
-    "yellow",
-    "orange_red1",
-    "dark_cyan",
-    "deep_pink3",
-    "wheat1",
-    "thistle1",
-    "aquamarine1",
-]
+WEATHER_COLORS = {
+    "Thunderstorm": "#0091ff",
+    "Drizzle": "#4890fe",
+    "Rain": "#006eff",
+    "Snow": "#16efff",
+    "Clear": "#ffb915",
+    "Clouds": "#b6b6b6",
+}
+
+TEMP_COLORS = {
+    0: "#202ffe",
+    10: "#00a6ff",
+    15: "#31f9f9",
+    22: "#63ff38",
+    26: "#ffdd00",
+    30: "#ff6f00",
+    40: "#ff4000",
+}
+
+
+def _get_temp_color(temp: float) -> str:
+    temp_brackets = list(TEMP_COLORS.keys())
+    if temp <= temp_brackets[0]:
+        return TEMP_COLORS[temp_brackets[0]]
+
+    for lower, upper in itertools.pairwise(temp_brackets):
+        if lower < temp <= upper:
+            return TEMP_COLORS[upper]
+
+    return TEMP_COLORS[temp_brackets[-1]]
 
 
 def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
-    PAD = (0, 0, 1, 0)
     grid = Table.grid(expand=True)
     grid.add_column()
     grid.add_column()
 
-    date_str = datetime.fromtimestamp(entry.dt).strftime(TIME_OUT_FMT)
-    date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
-    weather_emoji = WEATHER_EMOJIS.get(entry.weather[0].main, "")
-    description = Text(f"{weather_emoji} {entry.weather[0].description}", style=f"bold {COLOR_PALETTE[5]}")
-    grid.add_row(Padding(date, PAD), Padding(description, PAD))
+    weather_category = entry.weather[0].main
+    weather_color = WEATHER_COLORS.get(weather_category, "")
+    weather_emoji = WEATHER_EMOJIS.get(weather_category, "")
 
-    temp = Text(f"{entry.main.temp:.1f}º", style=COLOR_PALETTE[3])
-    feeling = Text(f"{entry.main.feels_like:.1f}º", style=COLOR_PALETTE[3])
+    date_str = datetime.fromtimestamp(entry.dt).strftime(TIME_OUT_FMT)
+    date = Text(date_str, style="bold")
+    description = Text(f"{weather_emoji} {entry.weather[0].description}", style=f"bold {weather_color}")
+    grid.add_row(Padding(description, (1, 0, 1, 0)))
+
+    temp = Text(f"{entry.main.temp:.1f}º", style=_get_temp_color(entry.main.temp))
+    feeling = Text(f"{entry.main.feels_like:.1f}º", style=_get_temp_color(entry.main.feels_like))
     grid.add_row("Temperature", temp)
     grid.add_row("Feels like", feeling)
 
     if isinstance(entry, ForecastEntry):
-        pop = Text(f"{100 * entry.pop:.2f}%", style=COLOR_PALETTE[0])
+        pop = Text(f"{100 * entry.pop:.2f}%", style=WEATHER_COLORS["Rain"])
         grid.add_row("Precipitation", pop)
 
-    rain_vol = Text(f"{100 * entry.rain.volume:.2f}mm", style=COLOR_PALETTE[0])
-    snow_vol = Text(f"{100 * entry.snow.volume:.2f}mm", style=COLOR_PALETTE[0])
+    rain_vol = Text(f"{100 * entry.rain.volume:.2f}mm", style=WEATHER_COLORS["Rain"])
+    snow_vol = Text(f"{100 * entry.snow.volume:.2f}mm", style=WEATHER_COLORS["Snow"])
 
     if entry.rain.volume > 0.0:
         grid.add_row("🌧️ Rain", rain_vol)
     if entry.snow.volume > 0.0:
         grid.add_row("🌨️ Snow", snow_vol)
 
-    return Panel(grid, width=ENTRY_PANEL_WIDTH)
+    return Panel(grid, width=ENTRY_PANEL_WIDTH, title=date, title_align="left")
 
 
 def _group_entries_by_day(data: OpenWeatherForecast) -> None:

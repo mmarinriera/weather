@@ -145,7 +145,7 @@ def render_current(
     include_humidity: bool,
 ) -> None:
     date = datetime.fromtimestamp(data.dt).strftime(DATE_OUT_FMT)
-    title = f"[bold]Current Weather in {city}, {country}, {date}"
+    title = f"[bold]Weather in {city}, {country}, {date}"
     console.print(Padding(Panel(title), pad=(1, 0, 1, 0)))
     console.print(_render_entry(data, include_pressure, include_wind, include_humidity), width=ENTRY_PANEL_WIDTH)
 

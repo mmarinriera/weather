@@ -84,14 +84,24 @@ def now(ctx: typer.Context, city: str, country: str) -> None:
 
 
 @weather.command()
-def forecast(ctx: typer.Context, city: str, country: str, days: Annotated[int, typer.Argument()] = 1) -> None:
+def forecast(
+    ctx: typer.Context,
+    city: str,
+    country: str,
+    hours: Annotated[int, typer.Argument()] = 24,
+    days: Annotated[int | None, typer.Option("--days", "-d", help="Forecast range in days.")] = None,
+) -> None:
     """
-    Show daily weather forecast in 3h intervals for CITY, COUNTRY for the following DAYS.
+    Show daily weather forecast in 3h intervals for CITY, COUNTRY for the following HOURS.
+
+    Use option --days DAYS to define the forecast range in days. Supersedes hours.
     """
     if ctx.obj["dev_mode"]:
         data = _get_test_data_forecast()
         console.render_forecast("This is a test", "DEV", data)
         return
 
-    data = query_weather_forecast(city, country, days=days, api_key=ctx.obj["api_key"])
+    hours = days * 24 if days is not None else hours
+
+    data = query_weather_forecast(city, country, hours=hours, api_key=ctx.obj["api_key"])
     console.render_forecast(city, country, data)

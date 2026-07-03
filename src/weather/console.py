@@ -15,9 +15,18 @@ from weather.weather_api import OpenWeatherForecast
 
 console = Console()
 
-DATETIME_OUT_FMT = "%a %d %b %H:%M"
 DATE_OUT_FMT = "%a %d %b"
 TIME_OUT_FMT = "%H:%M"
+
+WEATHER_EMOJIS = {
+    "Thunderstorm": "🌩️",
+    "Drizzle": "🌧️",
+    "Rain": "🌧️",
+    "Snow": "🌨️",
+    "Clear": "☀️",
+    "Clouds": "☁️",
+    "801": "⛅️",
+}
 
 logger = logging.getLogger(__name__)
 COLOR_PALETTE = [
@@ -34,21 +43,21 @@ COLOR_PALETTE = [
 
 
 def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
-    PAD = (1, 0)
+    PAD = (0, 0, 1, 0)
     grid = Table.grid(expand=True)
     grid.add_column()
     grid.add_column()
     grid.add_column()
     grid.add_column()
 
+    weather_emoji = WEATHER_EMOJIS.get(entry.weather[0].main, "")
+
     date_str = datetime.fromtimestamp(entry.dt).strftime(TIME_OUT_FMT)
     date = Text(date_str, style=f"bold {COLOR_PALETTE[2]}")
     temp = Text(f"{entry.main.temp:.1f}º", style=COLOR_PALETTE[3])
     feeling = Text(f"{entry.main.feels_like:.1f}º", style=COLOR_PALETTE[3])
-    weather_main = Text(f"{entry.weather[0].main}", style=f"bold {COLOR_PALETTE[5]}")
-    description = Text(f"{entry.weather[0].description}", style=f"bold {COLOR_PALETTE[5]}")
-    grid.add_row(Padding(date, PAD))
-    grid.add_row(Padding(weather_main, PAD), Padding(description, PAD))
+    description = Text(f"{weather_emoji} {entry.weather[0].description}", style=f"bold {COLOR_PALETTE[5]}")
+    grid.add_row(Padding(date, PAD), Padding(description, PAD))
     grid.add_row("Temperature", temp, "Feels like", feeling)
 
     vol = Text(f"{100 * entry.rain.volume:.2f}mm", style=COLOR_PALETTE[0])

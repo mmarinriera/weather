@@ -91,8 +91,8 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
         rain_vol_hourly /= 3
         snow_vol_hourly /= 3
 
-    rain_vol = Text(f"{100 * rain_vol_hourly:.2f}mm", style=WEATHER_COLORS["Rain"])
-    snow_vol = Text(f"{100 * snow_vol_hourly:.2f}mm", style=WEATHER_COLORS["Snow"])
+    rain_vol = Text(f"{100 * rain_vol_hourly:.2f}mm/h", style=WEATHER_COLORS["Rain"])
+    snow_vol = Text(f"{100 * snow_vol_hourly:.2f}mm/h", style=WEATHER_COLORS["Snow"])
 
     if rain_vol_hourly > 0.0:
         grid.add_row("🌧️ Rain", rain_vol)

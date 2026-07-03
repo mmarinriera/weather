@@ -1,9 +1,13 @@
 import json
 import logging
+import os
+from datetime import datetime
+from datetime import timedelta
+from enum import Enum
 from typing import Annotated
 
 import typer
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 
 from weather import console
 from weather import get_resource
@@ -20,9 +24,14 @@ weather = typer.Typer()
 logger = logging.getLogger(__name__)
 
 
+class ForecastPeriod(str, Enum):
+    today = "today"
+    tomorrow = "tomorrow"
+
+
 def _load_api_key() -> str:
-    env: dict[str, str | None] = dotenv_values(".env")
-    api_key = env.get("OPENWEATHER_API_KEY")
+    load_dotenv(".env")
+    api_key = os.getenv("OPENWEATHER_API_KEY")
     if api_key is None:
         logger.critical("API key not found")
         raise typer.Exit(1)
@@ -41,6 +50,16 @@ def _get_test_data_forecast() -> OpenWeatherForecast:
     with open(test_file) as f:
         data: OpenWeatherForecast = OpenWeatherForecast.model_validate(json.load(f))
     return data
+
+
+def _hours_until_end_of_today() -> float:
+    current_time = datetime.now()
+    time_delta = (
+        datetime.combine(current_time.date() + timedelta(days=1), datetime.strptime("0000", "%H%M").time())
+        - current_time
+    )
+    hours = time_delta.seconds / 3600
+    return hours
 
 
 def version_callback(value: bool) -> None:
@@ -90,30 +109,36 @@ def forecast(
     ctx: typer.Context,
     city: str,
     country: str,
-    hours: Annotated[int, typer.Argument()] = 24,
-    days: Annotated[int | None, typer.Option("--days", "-d", help="Forecast range in days.")] = None,
+    period: Annotated[ForecastPeriod, typer.Argument(envvar="WEATHER_FORECAST_PERIOD")] = ForecastPeriod.today,
+    days: Annotated[int | None, typer.Option("--days", "-d", help="Forecast period in days.")] = None,
+    hours: Annotated[int | None, typer.Option("--hours", "-h", help="Forecast period in hours.")] = None,
 ) -> None:
     """
-    Show daily weather forecast in 3h intervals for CITY, COUNTRY for the following HOURS.
+    Show daily weather forecast in 3h intervals for CITY, COUNTRY for the specified PERIOD from now.
 
-    Use option --days DAYS to define the forecast range in days. Supersedes hours.
+    PERIOD can take either "today" or "tomorrow", setting the forecast period until the end of today or tomorrow, respectively.
+
+    Alternatively, using the --days and/or --hours option can be used to precisely define the forecast period, superseding the PERIOD argument, if passed.
+
+    If both --days and --hours values are passed, they will be added to define the forecast period.
     """
     if ctx.obj["dev_mode"]:
         data = _get_test_data_forecast()
         console.render_forecast("This is a test", "DEV", data)
         return
 
-    if days is None and hours / 24 > MAX_DAYS_FORECAST:
+    if days is not None or hours is not None:
+        hours = hours if hours is not None else 0
+        hours += days * 24 if days is not None else 0
+    else:
+        h_until_end_of_day = int(_hours_until_end_of_today())
+        hours = h_until_end_of_day if period == ForecastPeriod.today else h_until_end_of_day + 24
+
+    if hours / 24 > MAX_DAYS_FORECAST:
         logger.warning(
             f"Maximum forecast is {MAX_DAYS_FORECAST} days. Capping query to {MAX_DAYS_FORECAST} days ({MAX_DAYS_FORECAST * 24}h)."
         )
         hours = MAX_DAYS_FORECAST * 24
-
-    if days is not None and days > MAX_DAYS_FORECAST:
-        logger.warning(f"Maximum forecast is {MAX_DAYS_FORECAST} days. Capping query to {MAX_DAYS_FORECAST} days.")
-        days = MAX_DAYS_FORECAST
-
-    hours = days * 24 if days is not None else hours
 
     data = query_weather_forecast(city, country, hours=hours, api_key=ctx.obj["api_key"])
     console.render_forecast(city, country, data)

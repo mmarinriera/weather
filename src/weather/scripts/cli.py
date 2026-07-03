@@ -91,17 +91,32 @@ def cli_callback(
 
 
 @weather.command()
-def now(ctx: typer.Context, city: str, country: str) -> None:
+def now(
+    ctx: typer.Context,
+    city: str,
+    country: str,
+    pressure: Annotated[
+        bool, typer.Option("--pressure", "-p", envvar="WEATHER_INCLUDE_PRESSURE", help="Include pressure.")
+    ] = False,
+    wind: Annotated[
+        bool, typer.Option("--wind", "-w", envvar="WEATHER_INCLUDE_WIND", help="Include wind speed.")
+    ] = False,
+    humidity: Annotated[
+        bool, typer.Option("--humidity", "-m", envvar="WEATHER_INCLUDE_HUMIDITY", help="Include humidity.")
+    ] = False,
+) -> None:
     """
     Show current weather for CITY, COUNTRY.
     """
     if ctx.obj["dev_mode"]:
         data = _get_test_data_current()
-        console.render_current("This is a test", "DEV", data)
+        console.render_current(
+            "This is a test", "DEV", data, include_pressure=pressure, include_wind=wind, include_humidity=humidity
+        )
         return
 
     data = query_current_weather(city, country, api_key=ctx.obj["api_key"])
-    console.render_current(city, country, data)
+    console.render_current(city, country, data, include_pressure=pressure, include_wind=wind, include_humidity=humidity)
 
 
 @weather.command()
@@ -112,6 +127,15 @@ def forecast(
     period: Annotated[ForecastPeriod, typer.Argument(envvar="WEATHER_FORECAST_PERIOD")] = ForecastPeriod.today,
     days: Annotated[int | None, typer.Option("--days", "-d", help="Forecast period in days.")] = None,
     hours: Annotated[int | None, typer.Option("--hours", "-h", help="Forecast period in hours.")] = None,
+    pressure: Annotated[
+        bool, typer.Option("--pressure", "-p", envvar="WEATHER_INCLUDE_PRESSURE", help="Include pressure.")
+    ] = False,
+    wind: Annotated[
+        bool, typer.Option("--wind", "-w", envvar="WEATHER_INCLUDE_WIND", help="Include wind speed.")
+    ] = False,
+    humidity: Annotated[
+        bool, typer.Option("--humidity", "-m", envvar="WEATHER_INCLUDE_HUMIDITY", help="Include humidity.")
+    ] = False,
 ) -> None:
     """
     Show daily weather forecast in 3h intervals for CITY, COUNTRY for the specified PERIOD from now.
@@ -124,7 +148,9 @@ def forecast(
     """
     if ctx.obj["dev_mode"]:
         data = _get_test_data_forecast()
-        console.render_forecast("This is a test", "DEV", data)
+        console.render_forecast(
+            "This is a test", "DEV", data, include_pressure=pressure, include_wind=wind, include_humidity=humidity
+        )
         return
 
     if days is not None or hours is not None:
@@ -141,4 +167,6 @@ def forecast(
         hours = MAX_DAYS_FORECAST * 24
 
     data = query_weather_forecast(city, country, hours=hours, api_key=ctx.obj["api_key"])
-    console.render_forecast(city, country, data)
+    console.render_forecast(
+        city, country, data, include_pressure=pressure, include_wind=wind, include_humidity=humidity
+    )

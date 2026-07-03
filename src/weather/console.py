@@ -38,6 +38,8 @@ WEATHER_COLORS = {
     "Clouds": "#b6b6b6",
 }
 
+COLOR_HUMIDITY = "#83bfff"
+COLOR_WIND = "#baf5ff"
 TEMP_COLORS = {
     0: "#202ffe",
     10: "#00a6ff",
@@ -61,7 +63,12 @@ def _get_temp_color(temp: float) -> str:
     return TEMP_COLORS[temp_brackets[-1]]
 
 
-def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
+def _render_entry(
+    entry: OpenWeatherCurrent | ForecastEntry,
+    include_pressure: bool = True,
+    include_wind: bool = True,
+    include_humidity: bool = True,
+) -> Panel:
     grid = Table.grid(expand=True)
     grid.add_column()
     grid.add_column()
@@ -81,6 +88,18 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     feeling = Text(f"{entry.main.feels_like:.1f}º", style=feel_color)
     grid.add_row("Temperature", temp)
     grid.add_row("Feels like", feeling)
+
+    if include_pressure:
+        pressure = Text(f"{entry.main.pressure}hPa")
+        grid.add_row("Pressure", pressure)
+
+    if include_wind:
+        wind = Text(f"{entry.wind.speed}m/s", style=COLOR_WIND)
+        grid.add_row("Wind speed", wind)
+
+    if include_humidity:
+        humidity = Text(f"{entry.main.humidity}%", style=COLOR_HUMIDITY)
+        grid.add_row("Humidity", humidity)
 
     rain_vol_hourly = entry.rain.volume
     snow_vol_hourly = entry.snow.volume
@@ -103,26 +122,42 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     return Panel(grid, width=ENTRY_PANEL_WIDTH, title=time, title_align="left", border_style=temp_color)
 
 
-def _group_entries_by_day(data: OpenWeatherForecast) -> None:
+def _group_entries_by_day(
+    data: OpenWeatherForecast, include_pressure: bool, include_wind: bool, include_humidity: bool
+) -> None:
     # Forecast entries are already sorted by date
     for date, group in itertools.groupby(data.forecast, key=lambda d: datetime.fromtimestamp(d.dt).date()):
         console.rule(title=f"[bold] {date.strftime(DATE_OUT_FMT)}", align="left", style="")
         console.print(
             Padding(
-                Columns([_render_entry(entry) for entry in group]),
+                Columns([_render_entry(entry, include_pressure, include_wind, include_humidity) for entry in group]),
                 pad=(1, 0, 1, 0),
             ),
         )
 
 
-def render_current(city: str, country: str, data: OpenWeatherCurrent) -> None:
+def render_current(
+    city: str,
+    country: str,
+    data: OpenWeatherCurrent,
+    include_pressure: bool,
+    include_wind: bool,
+    include_humidity: bool,
+) -> None:
     date = datetime.fromtimestamp(data.dt).strftime(DATE_OUT_FMT)
     title = f"[bold]Current Weather in {city}, {country}, {date}"
     console.print(Padding(Panel(title), pad=(1, 0, 1, 0)))
-    console.print(_render_entry(data), width=ENTRY_PANEL_WIDTH)
+    console.print(_render_entry(data, include_pressure, include_wind, include_humidity), width=ENTRY_PANEL_WIDTH)
 
 
-def render_forecast(city: str, country: str, data: OpenWeatherForecast) -> None:
+def render_forecast(
+    city: str,
+    country: str,
+    data: OpenWeatherForecast,
+    include_pressure: bool,
+    include_wind: bool,
+    include_humidity: bool,
+) -> None:
     title = f"[bold]Weather forecast for {city}, {country}"
     console.print(Padding(Panel(title), pad=(1, 0, 1, 0)))
-    _group_entries_by_day(data)
+    _group_entries_by_day(data, include_pressure, include_wind, include_humidity)

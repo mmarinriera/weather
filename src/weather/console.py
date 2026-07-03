@@ -17,7 +17,7 @@ console = Console()
 
 DATE_OUT_FMT = "%a %d %b"
 TIME_OUT_FMT = "%H:%M"
-ENTRY_PANEL_WIDTH = 48
+ENTRY_PANEL_WIDTH = 32
 WEATHER_EMOJIS = {
     "Thunderstorm": "🌩️",
     "Drizzle": "🌧️",
@@ -42,7 +42,7 @@ COLOR_PALETTE = [
 ]
 
 
-def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
+def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Panel:
     PAD = (0, 0, 1, 0)
     grid = Table.grid(expand=True)
     grid.add_column()
@@ -71,7 +71,7 @@ def _render_entry(entry: OpenWeatherCurrent | ForecastEntry) -> Table:
     if entry.snow.volume > 0.0:
         grid.add_row("🌨️ Snow", snow_vol)
 
-    return grid
+    return Panel(grid, width=ENTRY_PANEL_WIDTH)
 
 
 def _group_entries_by_day(data: OpenWeatherForecast) -> None:
@@ -80,7 +80,7 @@ def _group_entries_by_day(data: OpenWeatherForecast) -> None:
         console.rule(title=f"[bold] {date.strftime(DATE_OUT_FMT)}", align="left")
         console.print(
             Padding(
-                Columns([Panel(_render_entry(entry), width=ENTRY_PANEL_WIDTH) for entry in group]),
+                Columns([_render_entry(entry) for entry in group]),
                 pad=(1, 0, 1, 0),
             ),
         )
@@ -90,7 +90,7 @@ def render_current(city: str, country: str, data: OpenWeatherCurrent) -> None:
     date = datetime.fromtimestamp(data.dt).strftime(DATE_OUT_FMT)
     title = f"[bold]Current Weather in {city}, {country}, {date}"
     console.print(Padding(Panel(title), pad=(1, 0, 1, 0)))
-    console.print(Panel(_render_entry(data), width=64))
+    console.print(_render_entry(data), width=ENTRY_PANEL_WIDTH)
 
 
 def render_forecast(city: str, country: str, data: OpenWeatherForecast) -> None:

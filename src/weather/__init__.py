@@ -32,4 +32,9 @@ def add_file_handler(filename: Path) -> None:
     logger.addHandler(handler)
 
 
+def set_logging_level(level: int = logging.DEBUG) -> None:
+    logger = logging.getLogger(__name__)
+    logger.setLevel(level)
+
+
 _init_logging()

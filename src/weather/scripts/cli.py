@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from weather import console
 from weather import get_resource
 from weather import get_version
+from weather import set_logging_level
 from weather.weather_api import OpenWeatherCurrent
 from weather.weather_api import OpenWeatherForecast
 from weather.weather_api import query_current_weather
@@ -81,7 +82,7 @@ def cli_callback(
     ctx.ensure_object(dict)
 
     if debug_mode:
-        logger.setLevel(level=logging.DEBUG)
+        set_logging_level(level=logging.DEBUG)
 
     ctx.obj["debug"] = debug_mode
     ctx.obj["dev_mode"] = dev_mode

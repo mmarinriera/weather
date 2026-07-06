@@ -1,5 +1,7 @@
 import logging
 import sys
+from datetime import datetime
+from datetime import time
 
 import requests
 from pydantic import AliasChoices
@@ -109,6 +111,23 @@ def _get_location_coordinates(city_name: str, country_code: str, api_key: str) -
     return lat, lon
 
 
+def _next_timepoint(t: time) -> time:
+    """OpenWeather API returns forecast at fixed 3h intervals, from 2h to 23h within the same day"""
+    next_hour = (((t.hour - 2) // 3 + 1) * 3 + 2) % 24
+    return time(next_hour)
+
+
+def _get_n_time_points_from_hours(hours: int) -> int:
+    """Compute the number of time points to query, considering the time leading to the next time point."""
+    logger.debug(f"hours {hours}")
+    current_time = datetime.now().time()
+    next_forecast_timepoint = _next_timepoint(current_time)
+    logger.debug(f"current hour {current_time}; next timepoint {next_forecast_timepoint}")
+    n_time_points = (hours - (next_forecast_timepoint.hour - current_time.hour)) // 3 + 1
+    logger.debug(f"n timepoints {n_time_points}.")
+    return n_time_points
+
+
 def query_current_weather(city: str, country: str, api_key: str) -> OpenWeatherCurrent:
     lat, lon = _get_location_coordinates(city, country, api_key=api_key)
     res = requests.get(url=URL_CURRENT.format(lat=lat, lon=lon, api_key=api_key))
@@ -118,9 +137,9 @@ def query_current_weather(city: str, country: str, api_key: str) -> OpenWeatherC
 
 
 def query_weather_forecast(city: str, country: str, hours: int, api_key: str) -> OpenWeatherForecast:
-    cnt = hours // 3 + 1
+    n_time_points = _get_n_time_points_from_hours(hours)
     lat, lon = _get_location_coordinates(city, country, api_key=api_key)
-    res = requests.get(url=URL_FORECAST.format(lat=lat, lon=lon, cnt=cnt, api_key=api_key))
+    res = requests.get(url=URL_FORECAST.format(lat=lat, lon=lon, cnt=n_time_points, api_key=api_key))
     _check_api_status_code(res)
 
     data: OpenWeatherForecast = OpenWeatherForecast.model_validate(res.json())

@@ -16,6 +16,7 @@ classifiers = [
 ]
 dependencies = [
   "dotenv>=0.9.9",
+  "fastapi[standard]>=0.139",
   "pydantic>=2.13.4",
   "requests>=2.34.2",
   "rich>=15",

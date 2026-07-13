@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Weather</title>
+    <link rel="icon" type="image/x-icon" href="https://openweathermap.org/payload/api/media/file/{{ current.weather[0].icon }}.png">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', path='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>{{ city }}</h1>
+
+    <div class="current-card">
+
+        <div class="current-main">
+
+            <img
+                src="https://openweathermap.org/payload/api/media/file/{{ current.weather[0].icon }}.png"
+                alt="weather icon">
+
+            <div>
+
+                <div class="temperature">
+                    {{ current.main.temp }}°C
+                </div>
+
+                <div class="description">
+                    {{ current.weather[0].description }}
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="details">
+
+            <div>Feels like {{ current.main.feels_like }}°C</div>
+
+            <div>Humidity {{ current.main.humidity }}%</div>
+
+            <div>Wind {{ current.wind.speed }} m/s</div>
+
+            <div>Pressure {{ current.main.pressure }} hPa</div>
+
+        </div>
+
+    </div>
+
+    {% for day, forecasts in forecast.items() %}
+
+    <h2>{{ day }}</h2>
+
+    <div class="forecast-row">
+
+        {% for item in forecasts %}
+
+        <div class="forecast-card">
+
+            <div class="time">
+                {{ item.time }}
+            </div>
+
+            <img
+                src="https://openweathermap.org/payload/api/media/file/{{ item.weather[0].icon }}.png"
+                alt="icon">
+
+            <div class="temp">
+
+                {{ item.main.temperature }}°C
+
+            </div>
+
+            <div class="small">
+
+                {{ item.weather[0].description }}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

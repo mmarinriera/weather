@@ -15,6 +15,9 @@ URL_FORECAST = (
 URL_GEO = "http://api.openweathermap.org/geo/1.0/direct?q={city_name},{country_code}&limit={limit}&appid={api_key}"
 logger = logging.getLogger(__name__)
 
+DATE_OUT_FMT = "%a %d %b"
+TIME_OUT_FMT = "%H:%Mh"
+
 
 class LocationData(BaseModel):
     name: str
@@ -37,6 +40,7 @@ class WeatherDescription(BaseModel):
     id: int
     main: str
     description: str
+    icon: str
 
 
 class CloudsData(BaseModel):
@@ -67,6 +71,14 @@ class ForecastEntry(BaseModel):
     snow: SnowData = SnowData()
     pop: float
 
+    @property
+    def day(self) -> str:
+        return datetime.fromtimestamp(self.dt).strftime(DATE_OUT_FMT)
+
+    @property
+    def time(self) -> str:
+        return datetime.fromtimestamp(self.dt).strftime(TIME_OUT_FMT)
+
 
 class OpenWeatherCurrent(BaseModel):
     dt: int
@@ -77,6 +89,14 @@ class OpenWeatherCurrent(BaseModel):
     rain: RainData = RainData()
     snow: SnowData = SnowData()
     timezone: int
+
+    @property
+    def day(self) -> str:
+        return datetime.fromtimestamp(self.dt).strftime(DATE_OUT_FMT)
+
+    @property
+    def time(self) -> str:
+        return datetime.fromtimestamp(self.dt).strftime(TIME_OUT_FMT)
 
 
 class OpenWeatherForecast(BaseModel):

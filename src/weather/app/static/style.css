@@ -1,0 +1,153 @@
+:root {
+
+    --background: #eef4fa;
+
+    --card: white;
+
+    --text: #25313f;
+
+    --accent: #4a90e2;
+
+    --shadow: rgba(0,0,0,.12);
+
+}
+
+body {
+
+    margin: 0;
+
+    font-family: system-ui, sans-serif;
+
+    background: var(--background);
+
+    color: var(--text);
+
+}
+
+.container {
+
+    max-width: 1100px;
+
+    margin: auto;
+
+    padding: 2rem;
+
+}
+
+h1 {
+
+    margin-bottom: 1rem;
+
+}
+
+h2 {
+
+    margin-top: 2rem;
+
+}
+
+.current-card {
+
+    background: var(--card);
+
+    border-radius: 16px;
+
+    padding: 1.5rem;
+
+    box-shadow: 0 4px 12px var(--shadow);
+
+}
+
+.current-main {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 1rem;
+
+}
+
+.temperature {
+
+    font-size: 3rem;
+
+    font-weight: bold;
+
+}
+
+.description {
+
+    color: gray;
+
+}
+
+.details {
+
+    margin-top: 1rem;
+
+    display: grid;
+
+    grid-template-columns: repeat(2, auto);
+
+    gap: .5rem;
+
+}
+
+.forecast-row {
+
+    display: flex;
+
+    gap: 1rem;
+
+    overflow-x: auto;
+
+    padding-bottom: .5rem;
+
+}
+
+.forecast-card {
+
+    min-width: 120px;
+
+    background: white;
+
+    border-radius: 12px;
+
+    padding: 1rem;
+
+    text-align: center;
+
+    box-shadow: 0 2px 8px var(--shadow);
+
+}
+
+.forecast-card img {
+
+    width: 64px;
+
+}
+
+.time {
+
+    font-weight: bold;
+
+    margin-bottom: .5rem;
+
+}
+
+.temp {
+
+    font-size: 1.3rem;
+
+    font-weight: bold;
+
+}
+
+.small {
+
+    color: gray;
+
+    font-size: .85rem;
+
+}

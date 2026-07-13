@@ -185,15 +185,14 @@ h2 {
 
 }
 
-.forecast-row {
+.forecast-grid {
 
-    display: flex;
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
 
     gap: 1rem;
-
-    overflow-x: auto;
-
-    padding-bottom: .5rem;
 
 }
 

@@ -27,7 +27,7 @@
             <div>
 
                 <div class="temperature">
-                    {{ current.main.temp }}°C
+                    {{ "%.1f"|format(current.main.temp) }}°C
                 </div>
 
                 <div class="description">
@@ -40,7 +40,7 @@
 
         <div class="details">
 
-            <div>Feels like {{ current.main.feels_like }}°C</div>
+            <div>Feels like {{ "%.1f"|format(current.main.feels_like) }}°C</div>
 
             <div>Humidity {{ current.main.humidity }}%</div>
 
@@ -72,7 +72,7 @@
 
             <div class="temp">
 
-                {{ item.main.temperature }}°C
+                {{ "%.1f"|format(item.main.temp) }}°C
 
             </div>
 

@@ -21,8 +21,99 @@ body {
     background: var(--background);
 
     color: var(--text);
+    
+    transition: background 0.5s ease;
+
 
 }
+
+body.sunny {
+
+    --background:
+        linear-gradient(
+            180deg,
+            #64b5f6,
+            #e3f2fd
+        );
+    --card: white;
+    --text: #222;
+}
+
+body.partly-cloudy {
+
+    --background:
+        linear-gradient(
+            #8ec5fc,
+            #d9e4f5
+        );
+    --card: #b5c9ff76;
+    --text: #222;
+
+}
+
+body.cloudy {
+
+    --background:
+        linear-gradient(
+            #90a4ae,
+            #cfd8dc
+        );
+    --card: #ffffff5c;
+    --text: #222;
+
+}
+
+body.rain {
+
+    --background:
+        linear-gradient(
+            #455a64,
+            #78909c
+        );
+    --card: #6385ff;
+    --text: white;
+
+}
+
+body.storm {
+
+    --background:
+        linear-gradient(
+            #263238,
+            #546e7a
+        );
+
+    --card: #0044ff;
+    --text: white;
+
+}
+
+body.snow {
+
+    --background:
+        linear-gradient(
+            #fafafa,
+            #dfe9f3
+        );
+    --card: #d0ebff;
+    --text: #222;
+
+}
+
+body.night {
+
+    --background:
+        linear-gradient(
+            #0d1b2a,
+            #243b55
+        );
+
+    --card: rgba(0, 4, 255, 0.736);
+    --text: white;
+
+}
+
+
 
 .container {
 
@@ -110,7 +201,7 @@ h2 {
 
     min-width: 120px;
 
-    background: white;
+    background: var(--card);
 
     border-radius: 12px;
 

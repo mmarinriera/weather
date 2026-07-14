@@ -15,6 +15,9 @@
     --current-info-size: 1rem;
     --icon-size: 96px;
 
+    --main-border-radius: 16px;
+    --card-border-radius: 10%;
+
     --day-size: 1.5rem;
     --grid-gap: 1rem;
 
@@ -34,6 +37,8 @@
 
         --day-size: 3rem;
         --grid-gap: 2rem;
+
+        --main-border-radius: 32px;
 
         --card-temp-size: 3rem;
         --card-info-size: 3rem;
@@ -175,7 +180,7 @@ h2 {
 
     background: var(--card);
 
-    border-radius: 16px;
+    border-radius: var(--main-border-radius);
 
     padding: 1.5rem;
 
@@ -256,7 +261,7 @@ h2 {
 
     background: var(--card);
 
-    border-radius: 12px;
+    border-radius: var(--card-border-radius);
 
     padding: var(--card-padding);
 

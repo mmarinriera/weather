@@ -46,7 +46,7 @@ body.partly-cloudy {
             #8ec5fc,
             #d9e4f5
         );
-    --card: #b5c9ff76;
+    --card: #e7edf6;
     --text: #222;
 
 }
@@ -70,7 +70,7 @@ body.rain {
             #455a64,
             #78909c
         );
-    --card: #6385ff;
+    --card: #96b4c4;
     --text: white;
 
 }
@@ -83,7 +83,7 @@ body.storm {
             #546e7a
         );
 
-    --card: #0044ff;
+    --card: #7498a9;
     --text: white;
 
 }
@@ -95,7 +95,7 @@ body.snow {
             #fafafa,
             #dfe9f3
         );
-    --card: #d0ebff;
+    --card: #f8f9f9;
     --text: #222;
 
 }
@@ -108,7 +108,7 @@ body.night {
             #243b55
         );
 
-    --card: rgba(0, 4, 255, 0.736);
+    --card: #30357e;
     --text: white;
 
 }

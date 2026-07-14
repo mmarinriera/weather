@@ -52,5 +52,5 @@ async def current(
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"city": city, "current": current_weather, "forecast": grouped},
+        context={"location": f"{city}, {country}", "current": current_weather, "forecast": grouped},
     )

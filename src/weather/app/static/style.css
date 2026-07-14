@@ -10,6 +10,36 @@
 
     --shadow: rgba(0,0,0,.12);
 
+    --title-size: 3rem;
+    --current-temp-size: 2.5rem;
+    --current-info-size: 1rem;
+    --icon-size: 96px;
+
+    --day-size: 1.5rem;
+    --grid-gap: 1rem;
+
+    --card-temp-size: 2rem;
+    --card-info-size: 1rem;
+    --card-icon-size: 96px;
+    --card-padding: 1rem;
+    
+}
+
+@media (max-width: 1100px) {
+    :root {
+        --title-size: 4rem;
+        --current-temp-size: 6rem;
+        --current-info-size: 3rem;
+        --icon-size: 200px;
+
+        --day-size: 3rem;
+        --grid-gap: 2rem;
+
+        --card-temp-size: 3rem;
+        --card-info-size: 3rem;
+        --card-icon-size: 200px;
+        --card-padding: 2rem;
+    }
 }
 
 body {
@@ -129,11 +159,15 @@ h1 {
 
     margin-bottom: 1rem;
 
+    font-size: var(--title-size);
+
 }
 
 h2 {
 
     margin-top: 2rem;
+
+    font-size: var(--day-size);
 
 }
 
@@ -148,6 +182,13 @@ h2 {
     box-shadow: 0 4px 12px var(--shadow);
 
 }
+
+.current-card img {
+
+    width: var(--icon-size);
+
+}
+
 
 .current-main {
 
@@ -165,11 +206,14 @@ h2 {
 
     font-weight: bold;
 
+    font-size: var(--current-temp-size);
+
 }
 
 .description {
 
-    color: gray;
+    color: var(--text);
+    font-size: var(--current-info-size);
 
 }
 
@@ -183,6 +227,8 @@ h2 {
 
     gap: .5rem;
 
+    font-size: var(--current-info-size);
+
 }
 
 .forecast-grid {
@@ -192,8 +238,16 @@ h2 {
     grid-template-columns:
         repeat(4, 1fr);
 
-    gap: 1rem;
+    gap: var(--grid-gap);
 
+}
+
+@media (max-width: 1100px) {
+    .forecast-grid {
+
+        grid-template-columns: repeat(2, 1fr);
+
+    }
 }
 
 .forecast-card {
@@ -204,7 +258,7 @@ h2 {
 
     border-radius: 12px;
 
-    padding: 1rem;
+    padding: var(--card-padding);
 
     text-align: center;
 
@@ -214,7 +268,7 @@ h2 {
 
 .forecast-card img {
 
-    width: 64px;
+    width: var(--card-icon-size);
 
 }
 
@@ -223,6 +277,8 @@ h2 {
     font-weight: bold;
 
     margin-bottom: .5rem;
+    
+    font-size: var(--card-temp-size);
 
 }
 
@@ -231,13 +287,17 @@ h2 {
     font-size: 1.3rem;
 
     font-weight: bold;
+    
+    font-size: var(--card-temp-size);
 
 }
 
-.small {
+.card-info {
 
-    color: gray;
+    color: var(--text);
 
     font-size: .85rem;
+
+    font-size: var(--card-info-size);
 
 }

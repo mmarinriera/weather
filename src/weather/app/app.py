@@ -33,7 +33,7 @@ templates = Jinja2Templates(directory=ABS_PATH.with_name("templates"))
 
 
 @app.get("/", response_class=HTMLResponse)
-async def current(
+async def weather(
     request: Request, city: str = settings.WEATHER_LOCATION_CITY, country: str = settings.WEATHER_LOCATION_COUNTRY
 ) -> HTMLResponse:
     current_weather = query_current_weather(city, country, api_key=settings.OPENWEATHER_API_KEY)

@@ -32,7 +32,7 @@ app.mount("/static", StaticFiles(directory=ABS_PATH.with_name("static")), name="
 templates = Jinja2Templates(directory=ABS_PATH.with_name("templates"))
 
 
-@app.get("/weather", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse)
 async def current(
     request: Request, city: str = settings.WEATHER_LOCATION_CITY, country: str = settings.WEATHER_LOCATION_COUNTRY
 ) -> HTMLResponse:

@@ -16,10 +16,6 @@ from weather.weather_api import query_weather_forecast
 logger = logging.getLogger(__name__)
 
 MAX_HOURS = 5 * 24
-
-DATE_OUT_FMT = "%a %d %b"
-TIME_OUT_FMT = "%H:%Mh"
-
 ABS_PATH = Path(__file__)
 
 

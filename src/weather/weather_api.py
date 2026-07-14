@@ -8,15 +8,15 @@ from pydantic import AliasChoices
 from pydantic import BaseModel
 from pydantic import Field
 
+DATE_OUT_FMT = "%a %d %b"
+TIME_OUT_FMT = "%H:%Mh"
+
 URL_CURRENT = "https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric"
 URL_FORECAST = (
     "http://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&cnt={cnt}&appid={api_key}&units=metric"
 )
 URL_GEO = "http://api.openweathermap.org/geo/1.0/direct?q={city_name},{country_code}&limit={limit}&appid={api_key}"
 logger = logging.getLogger(__name__)
-
-DATE_OUT_FMT = "%a %d %b"
-TIME_OUT_FMT = "%H:%Mh"
 
 
 class LocationData(BaseModel):

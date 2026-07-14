@@ -1,6 +1,5 @@
 import itertools
 import logging
-from datetime import datetime
 
 from rich.columns import Columns
 from rich.console import Console
@@ -16,8 +15,6 @@ from weather.weather_api import OpenWeatherForecast
 console = Console()
 logger = logging.getLogger(__name__)
 
-DATE_OUT_FMT = "%a %d %b"
-TIME_OUT_FMT = "%H:%Mh"
 ENTRY_PANEL_WIDTH = 32
 WEATHER_EMOJIS = {
     "Thunderstorm": "🌩️",
@@ -77,8 +74,7 @@ def _render_entry(
     weather_color = WEATHER_COLORS.get(weather_category, "")
     weather_emoji = WEATHER_EMOJIS.get(weather_category, "")
 
-    time_str = datetime.fromtimestamp(entry.dt).strftime(TIME_OUT_FMT)
-    time = Text(time_str, style="bold")
+    time = Text(entry.time, style="bold")
     description = Text(f"{weather_emoji} {entry.weather[0].description}", style=f"bold {weather_color}")
     grid.add_row(Padding(description, (1, 0, 1, 0)))
 
@@ -126,8 +122,8 @@ def _group_entries_by_day(
     data: OpenWeatherForecast, include_pressure: bool, include_wind: bool, include_humidity: bool
 ) -> None:
     # Forecast entries are already sorted by date
-    for date, group in itertools.groupby(data.forecast, key=lambda d: datetime.fromtimestamp(d.dt).date()):
-        console.rule(title=f"[bold] {date.strftime(DATE_OUT_FMT)}", align="left", style="")
+    for date, group in itertools.groupby(data.forecast, key=lambda d: d.day):
+        console.rule(title=f"[bold] {date}", align="left", style="")
         console.print(
             Padding(
                 Columns([_render_entry(entry, include_pressure, include_wind, include_humidity) for entry in group]),
@@ -144,8 +140,7 @@ def render_current(
     include_wind: bool,
     include_humidity: bool,
 ) -> None:
-    date = datetime.fromtimestamp(data.dt).strftime(DATE_OUT_FMT)
-    title = f"[bold]Weather in {city}, {country}, {date}"
+    title = f"[bold]Weather in {city}, {country}, {data.day}"
     console.print(Padding(Panel(title), pad=(1, 0, 1, 0)))
     console.print(_render_entry(data, include_pressure, include_wind, include_humidity), width=ENTRY_PANEL_WIDTH)
 

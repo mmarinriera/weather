@@ -8,6 +8,9 @@ from pydantic import AliasChoices
 from pydantic import BaseModel
 from pydantic import Field
 
+DATE_OUT_FMT = "%a %d %b"
+TIME_OUT_FMT = "%H:%Mh"
+
 URL_CURRENT = "https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric"
 URL_FORECAST = (
     "http://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&cnt={cnt}&appid={api_key}&units=metric"
@@ -37,6 +40,7 @@ class WeatherDescription(BaseModel):
     id: int
     main: str
     description: str
+    icon: str
 
 
 class CloudsData(BaseModel):
@@ -67,6 +71,14 @@ class ForecastEntry(BaseModel):
     snow: SnowData = SnowData()
     pop: float
 
+    @property
+    def day(self) -> str:
+        return datetime.fromtimestamp(self.dt).strftime(DATE_OUT_FMT)
+
+    @property
+    def time(self) -> str:
+        return datetime.fromtimestamp(self.dt).strftime(TIME_OUT_FMT)
+
 
 class OpenWeatherCurrent(BaseModel):
     dt: int
@@ -77,6 +89,47 @@ class OpenWeatherCurrent(BaseModel):
     rain: RainData = RainData()
     snow: SnowData = SnowData()
     timezone: int
+
+    @property
+    def day(self) -> str:
+        return datetime.fromtimestamp(self.dt).strftime(DATE_OUT_FMT)
+
+    @property
+    def time(self) -> str:
+        return datetime.fromtimestamp(self.dt).strftime(TIME_OUT_FMT)
+
+    @property
+    def theme(self) -> str:
+        match self.weather[0].icon:
+            case "01d":
+                return "sunny"
+
+            case "01n":
+                return "night"
+
+            case "02d" | "03d":
+                return "partly-cloudy"
+
+            case "02n" | "03n":
+                return "cloudy-night"
+
+            case "04d" | "04n":
+                return "cloudy"
+
+            case "09d" | "09n" | "10d" | "10n":
+                return "rain"
+
+            case "11d" | "11n":
+                return "storm"
+
+            case "13d" | "13n":
+                return "snow"
+
+            case "50d" | "50n":
+                return "fog"
+
+            case _:
+                return "default"
 
 
 class OpenWeatherForecast(BaseModel):

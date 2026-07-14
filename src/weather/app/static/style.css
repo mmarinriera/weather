@@ -1,0 +1,308 @@
+:root {
+
+    --background: #eef4fa;
+
+    --card: white;
+
+    --text: #25313f;
+
+    --accent: #4a90e2;
+
+    --shadow: rgba(0,0,0,.12);
+
+    --title-size: 3rem;
+    --current-temp-size: 2.5rem;
+    --current-info-size: 1rem;
+    --icon-size: 96px;
+
+    --main-border-radius: 16px;
+    --card-border-radius: 10%;
+
+    --day-size: 1.5rem;
+    --grid-gap: 1rem;
+
+    --card-temp-size: 2rem;
+    --card-info-size: 1rem;
+    --card-icon-size: 96px;
+    --card-padding: 1rem;
+    
+}
+
+@media (max-width: 1100px) {
+    :root {
+        --title-size: 4rem;
+        --current-temp-size: 6rem;
+        --current-info-size: 3rem;
+        --icon-size: 200px;
+
+        --day-size: 3rem;
+        --grid-gap: 2rem;
+
+        --main-border-radius: 32px;
+
+        --card-temp-size: 3rem;
+        --card-info-size: 3rem;
+        --card-icon-size: 200px;
+        --card-padding: 2rem;
+    }
+}
+
+body {
+
+    margin: 0;
+
+    font-family: system-ui, sans-serif;
+
+    background: var(--background);
+
+    color: var(--text);
+    
+    transition: background 0.5s ease;
+
+
+}
+
+body.sunny {
+
+    --background:
+        linear-gradient(
+            180deg,
+            #64b5f6,
+            #e3f2fd
+        );
+    --card: white;
+    --text: #222;
+}
+
+body.partly-cloudy {
+
+    --background:
+        linear-gradient(
+            #8ec5fc,
+            #d9e4f5
+        );
+    --card: #e7edf6;
+    --text: #222;
+
+}
+
+body.cloudy {
+
+    --background:
+        linear-gradient(
+            #90a4ae,
+            #cfd8dc
+        );
+    --card: #ffffff5c;
+    --text: #222;
+
+}
+
+body.rain {
+
+    --background:
+        linear-gradient(
+            #455a64,
+            #78909c
+        );
+    --card: #96b4c4;
+    --text: white;
+
+}
+
+body.storm {
+
+    --background:
+        linear-gradient(
+            #263238,
+            #546e7a
+        );
+
+    --card: #7498a9;
+    --text: white;
+
+}
+
+body.snow {
+
+    --background:
+        linear-gradient(
+            #fafafa,
+            #dfe9f3
+        );
+    --card: #f8f9f9;
+    --text: #222;
+
+}
+
+body.night {
+
+    --background:
+        linear-gradient(
+            #0d1b2a,
+            #243b55
+        );
+
+    --card: #30357e;
+    --text: white;
+
+}
+
+
+
+.container {
+
+    max-width: 1100px;
+
+    margin: auto;
+
+    padding: 2rem;
+
+}
+
+h1 {
+
+    margin-bottom: 1rem;
+
+    font-size: var(--title-size);
+
+}
+
+h2 {
+
+    margin-top: 2rem;
+
+    font-size: var(--day-size);
+
+}
+
+.current-card {
+
+    background: var(--card);
+
+    border-radius: var(--main-border-radius);
+
+    padding: 1.5rem;
+
+    box-shadow: 0 4px 12px var(--shadow);
+
+}
+
+.current-card img {
+
+    width: var(--icon-size);
+
+}
+
+
+.current-main {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 1rem;
+
+}
+
+.temperature {
+
+    font-size: 3rem;
+
+    font-weight: bold;
+
+    font-size: var(--current-temp-size);
+
+}
+
+.description {
+
+    color: var(--text);
+    font-size: var(--current-info-size);
+
+}
+
+.details {
+
+    margin-top: 1rem;
+
+    display: grid;
+
+    grid-template-columns: repeat(2, auto);
+
+    gap: .5rem;
+
+    font-size: var(--current-info-size);
+
+}
+
+.forecast-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: var(--grid-gap);
+
+}
+
+@media (max-width: 1100px) {
+    .forecast-grid {
+
+        grid-template-columns: repeat(2, 1fr);
+
+    }
+}
+
+.forecast-card {
+
+    min-width: 120px;
+
+    background: var(--card);
+
+    border-radius: var(--card-border-radius);
+
+    padding: var(--card-padding);
+
+    text-align: center;
+
+    box-shadow: 0 2px 8px var(--shadow);
+
+}
+
+.forecast-card img {
+
+    width: var(--card-icon-size);
+
+}
+
+.time {
+
+    font-weight: bold;
+
+    margin-bottom: .5rem;
+    
+    font-size: var(--card-temp-size);
+
+}
+
+.temp {
+
+    font-size: 1.3rem;
+
+    font-weight: bold;
+    
+    font-size: var(--card-temp-size);
+
+}
+
+.card-info {
+
+    color: var(--text);
+
+    font-size: .85rem;
+
+    font-size: var(--card-info-size);
+
+}

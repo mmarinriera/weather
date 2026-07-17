@@ -42,6 +42,14 @@
 
             <div>Feels like {{ "%.1f"|format(current.main.feels_like) }}°C</div>
 
+            {% if current.rain.volume > 0.0 %}
+            <div>Rain {{ "%.1f"|format(current.rain.volume/3) }}mm/h</div>
+            {% endif %}
+
+            {% if current.snow.volume > 0.0 %}
+            <div>Snow {{ "%.1f"|format(current.snow.volume/3) }}mm/h</div>
+            {% endif %}
+
             <div>Humidity {{ current.main.humidity }}%</div>
 
             <div>Wind {{ current.wind.speed }} m/s</div>
@@ -51,6 +59,8 @@
         </div>
 
     </div>
+
+    <h1>Weather forecast</h1>
 
     {% for day, forecasts in forecast.items() %}
 
@@ -76,9 +86,19 @@
 
             </div>
 
-            <div class="card-info">
+            <div class="card-details">
 
-                {{ item.weather[0].description }}
+                <div>Feels like {{ "%.1f"|format(item.main.feels_like) }}°C</div>
+
+                <div>Precipitation {{ item.pop*100 }}%</div>
+                
+                {% if item.rain.volume > 0.0 %}
+                <div>Rain {{ "%.1f"|format(item.rain.volume/3) }}mm/h</div>
+                {% endif %}
+                
+                {% if item.snow.volume > 0.0 %}
+                <div>Snow {{ "%.1f"|format(item.snow.volume/3) }}mm/h</div>
+                {% endif %}
 
             </div>
 

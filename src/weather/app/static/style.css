@@ -289,8 +289,6 @@ h2 {
 
 .temp {
 
-    font-size: 1.3rem;
-
     font-weight: bold;
     
     font-size: var(--card-temp-size);
@@ -301,7 +299,15 @@ h2 {
 
     color: var(--text);
 
-    font-size: .85rem;
+    font-size: var(--card-info-size);
+
+}
+
+.card-details {
+
+    margin-top: 1rem;
+
+    color: var(--text);
 
     font-size: var(--card-info-size);
 
